@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Starciti — Product Walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EFF2F1; --card:#FFFFFF; --ink:#14181B; --ink-soft:#57635F; --ink-faint:#8A9490;
+    --line:#DEE4E2; --line-soft:#EAEEEC;
+    --brand:#0B6E63; --brand-dark:#084F47; --brand-tint:#E2EFEC;
+    --amber:#B9762A; --amber-tint:#F7EADA; --amber-ink:#7A4E17;
+    --red:#B3261E; --red-tint:#F7E1DF;
+    --sidebar-bg:#0F1E1B; --sidebar-ink:#B7C6C1; --sidebar-active:#17332C; --sidebar-white:#F3F6F5;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ font-family:'Inter',sans-serif; color:var(--ink); background:var(--paper); -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,.display{ font-family:'Space Grotesk',sans-serif; }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; cursor:pointer; }
+  input,select,textarea{ font-family:inherit; }
+
+  .app{ display:flex; min-height:100vh; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{ width:238px; flex-shrink:0; background:var(--sidebar-bg); color:var(--sidebar-ink); display:flex; flex-direction:column; padding:20px 13px; }
+  .brand{ display:flex; align-items:center; gap:10px; padding:2px 9px 20px 9px; }
+  .brand-mark{ width:31px; height:31px; border-radius:8px; background:var(--brand); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .brand-mark span{ font-family:'Space Grotesk',sans-serif; color:#fff; font-weight:700; font-size:15px; }
+  .brand-name{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16.5px; color:var(--sidebar-white); }
+  .brand-sub{ font-size:10.5px; color:#5E7168; margin-top:1px; }
+
+  .nav-group-label{ font-size:10.5px; color:#526157; margin:15px 9px 6px; letter-spacing:.02em; }
+  .nav-group-label:first-of-type{ margin-top:2px; }
+  .nav-item{ display:flex; align-items:center; gap:10px; padding:7.5px 10px; border-radius:7px; font-size:13.3px; font-weight:500; color:var(--sidebar-ink); margin-bottom:1px; border:none; background:transparent; width:100%; text-align:left; }
+  .nav-item svg{ width:16.5px; height:16.5px; flex-shrink:0; opacity:.85; }
+  .nav-item:hover{ background:#152724; color:var(--sidebar-white); }
+  .nav-item.active{ background:var(--sidebar-active); color:var(--sidebar-white); }
+  .nav-item.active svg{ opacity:1; }
+  .nav-badge{ margin-left:auto; background:var(--amber); color:#241705; font-size:10.5px; font-weight:700; padding:1px 6px; border-radius:20px; }
+
+  .sidebar-foot{ margin-top:auto; padding-top:12px; border-top:1px solid #1D332E; }
+  .role-toggle{ display:flex; background:#152724; border-radius:8px; padding:3px; margin:10px 9px 12px; }
+  .role-btn{ flex:1; text-align:center; padding:6px 0; font-size:11.5px; font-weight:600; color:#8CA098; border:none; background:transparent; border-radius:6px; }
+  .role-btn.active{ background:var(--brand); color:#fff; }
+  .user-row{ display:flex; align-items:center; gap:9px; padding:0 9px; }
+  .user-avatar{ width:29px; height:29px; border-radius:50%; background:#274A42; color:#DCEAE6; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; flex-shrink:0; }
+  .user-name{ font-size:12.5px; color:var(--sidebar-white); font-weight:600; }
+  .user-role{ font-size:11px; color:#6E8079; }
+
+  /* ---------- Main ---------- */
+  .main{ flex:1; min-width:0; display:flex; flex-direction:column; }
+  .topbar{ height:60px; flex-shrink:0; background:var(--card); border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; padding:0 26px; position:sticky; top:0; z-index:5; }
+  .topbar-title{ font-size:16px; font-weight:600; }
+  .topbar-sub{ font-size:12px; color:var(--ink-faint); margin-top:1px; }
+  .topbar-right{ display:flex; align-items:center; gap:14px; }
+  .search-box{ display:flex; align-items:center; gap:7px; background:var(--paper); border:1px solid var(--line); border-radius:7px; padding:6px 10px; width:220px; }
+  .search-box svg{ width:14px; height:14px; color:var(--ink-faint); flex-shrink:0; }
+  .search-box input{ border:none; background:transparent; outline:none; font-size:12.5px; width:100%; color:var(--ink); }
+  .icon-btn{ width:32px; height:32px; border-radius:7px; border:1px solid var(--line); background:var(--card); display:flex; align-items:center; justify-content:center; position:relative; }
+  .icon-btn svg{ width:15px; height:15px; color:var(--ink-soft); }
+  .dot{ position:absolute; top:6px; right:6px; width:7px; height:7px; border-radius:50%; background:var(--amber); border:1.5px solid var(--card); }
+
+  .content{ padding:26px; max-width:1220px; }
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  .page-head{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+  .page-head h1{ font-size:21px; font-weight:600; margin:0 0 4px; }
+  .page-head p{ font-size:13px; color:var(--ink-soft); margin:0; max-width:540px; }
+  .btn{ display:inline-flex; align-items:center; gap:7px; padding:8px 14px; border-radius:7px; font-size:13px; font-weight:600; border:1px solid transparent; }
+  .btn-primary{ background:var(--brand); color:#fff; }
+  .btn-primary:hover{ background:var(--brand-dark); }
+  .btn-ghost{ background:var(--card); border:1px solid var(--line); color:var(--ink); }
+  .btn-ghost:hover{ border-color:#C6CFCC; }
+  .btn-sm{ padding:5px 10px; font-size:12px; }
+  .btn svg{ width:14px; height:14px; }
+
+  .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px; }
+  .kpi-card{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 17px; }
+  .kpi-label{ font-size:12px; color:var(--ink-soft); margin-bottom:9px; }
+  .kpi-value{ font-family:'Space Grotesk',sans-serif; font-size:25px; font-weight:600; }
+  .kpi-delta{ font-size:11.5px; margin-top:6px; color:var(--brand); font-weight:600; }
+  .kpi-delta.warn{ color:var(--amber-ink); }
+  .kpi-delta.muted{ color:var(--ink-faint); font-weight:500; }
+
+  .panel{ background:var(--card); border:1px solid var(--line); border-radius:10px; margin-bottom:18px; overflow:hidden; }
+  .panel-head{ display:flex; align-items:center; justify-content:space-between; padding:15px 18px; border-bottom:1px solid var(--line-soft); }
+  .panel-head h3{ font-size:14.5px; font-weight:600; margin:0; }
+  .panel-head .link{ font-size:12.5px; color:var(--brand); font-weight:600; }
+  .panel-body{ padding:18px; }
+  .two-col{ display:grid; grid-template-columns:1.5fr 1fr; gap:18px; align-items:start; }
+
+  table{ width:100%; border-collapse:collapse; }
+  th{ text-align:left; font-size:11px; color:var(--ink-faint); font-weight:600; padding:10px 18px; border-bottom:1px solid var(--line); background:#FAFBFA; }
+  td{ padding:12px 18px; font-size:13px; border-bottom:1px solid var(--line-soft); vertical-align:middle; }
+  tr:last-child td{ border-bottom:none; }
+  tr.flag-row td{ background:var(--amber-tint); }
+  .cell-primary{ font-weight:600; }
+  .cell-sub{ font-size:11.5px; color:var(--ink-faint); margin-top:2px; }
+  .mono-num{ font-variant-numeric:tabular-nums; }
+
+  .pill{ display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px; font-size:11.5px; font-weight:600; white-space:nowrap; }
+  .pill-brand{ background:var(--brand-tint); color:var(--brand-dark); }
+  .pill-amber{ background:var(--amber-tint); color:var(--amber-ink); }
+  .pill-red{ background:var(--red-tint); color:var(--red); }
+  .pill-grey{ background:var(--line-soft); color:var(--ink-soft); }
+
+  .avatar-sm{ width:26px; height:26px; border-radius:50%; background:var(--brand-tint); color:var(--brand-dark); display:inline-flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:700; margin-right:8px; vertical-align:middle; }
+
+  /* Vehicle grid */
+  .veh-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .veh-card{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:15px 16px; }
+  .veh-top{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+  .veh-reg{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14.5px; }
+  .veh-type{ font-size:11.5px; color:var(--ink-faint); margin-top:2px; }
+  .veh-meta{ font-size:12px; color:var(--ink-soft); display:flex; justify-content:space-between; padding:5px 0; border-top:1px solid var(--line-soft); }
+  .veh-meta:first-of-type{ border-top:none; margin-top:6px; }
+
+  .flag-note{ background:var(--amber-tint); border:1px solid #E6C79A; border-radius:8px; padding:11px 13px; font-size:12.5px; color:var(--amber-ink); margin-top:10px; }
+  .flag-note b{ font-weight:700; }
+
+  .bar-chart{ display:flex; align-items:flex-end; gap:14px; height:170px; padding:18px 6px 0; }
+  .bar-col{ flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .bar{ width:100%; max-width:34px; border-radius:5px 5px 0 0; background:var(--brand); }
+  .bar-label{ font-size:11px; color:var(--ink-faint); }
+  .bar-val{ font-size:10.5px; color:var(--ink-soft); font-weight:600; }
+
+  /* ---- Tabs / segmented ---- */
+  .tabs{ display:flex; gap:5px; border-bottom:1px solid var(--line); margin-bottom:20px; flex-wrap:wrap; }
+  .tab-btn{ padding:9px 15px; font-size:13px; font-weight:600; color:var(--ink-soft); background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .tab-btn:hover{ color:var(--ink); }
+  .tab-btn.active{ color:var(--brand-dark); border-bottom-color:var(--brand); }
+  .subtabs{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+  .subtab-btn{ padding:6px 13px; font-size:12px; font-weight:600; border-radius:20px; border:1px solid var(--line); background:var(--card); color:var(--ink-soft); }
+  .subtab-btn.active{ background:var(--brand); border-color:var(--brand); color:#fff; }
+
+  /* ---- Forms ---- */
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+  .form-grid.cols-3{ grid-template-columns:1fr 1fr 1fr; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field.full{ grid-column:1 / -1; }
+  .field label{ font-size:11.5px; font-weight:600; color:var(--ink-soft); }
+  .field input, .field select, .field textarea{
+    border:1px solid var(--line); border-radius:7px; padding:8px 10px; font-size:13px; color:var(--ink);
+    background:var(--card); outline:none; width:100%;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--brand); }
+  .field textarea{ resize:vertical; min-height:56px; font-family:inherit; }
+  .switch-row{ display:flex; align-items:center; justify-content:space-between; border:1px solid var(--line); border-radius:7px; padding:9px 12px; }
+  .switch-row span{ font-size:12.5px; font-weight:600; color:var(--ink-soft); }
+  .switch{ width:36px; height:20px; border-radius:20px; background:var(--line); position:relative; flex-shrink:0; cursor:pointer; }
+  .switch.on{ background:var(--brand); }
+  .switch::after{ content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:.15s; }
+  .switch.on::after{ left:18px; }
+  .chip-row{ display:flex; gap:7px; flex-wrap:wrap; }
+  .chip{ padding:5px 11px; border-radius:20px; background:var(--brand-tint); color:var(--brand-dark); font-size:12px; font-weight:600; display:flex; align-items:center; gap:6px; }
+  .chip-add{ padding:5px 11px; border-radius:20px; border:1px dashed var(--line); color:var(--ink-faint); font-size:12px; font-weight:600; background:none; }
+
+  .line-table{ border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-top:6px; }
+  .line-table table td, .line-table table th{ padding:9px 12px; font-size:12.5px; }
+  .add-line-btn{ display:flex; align-items:center; gap:6px; padding:10px 14px; font-size:12.5px; font-weight:600; color:var(--brand-dark); background:#FAFBFA; border:none; width:100%; border-top:1px solid var(--line-soft); }
+
+  .price-summary{ border-top:1px dashed var(--line); margin-top:12px; padding-top:12px; }
+  .price-row{ display:flex; justify-content:space-between; font-size:13px; padding:4px 0; color:var(--ink-soft); }
+  .price-row.total{ color:var(--ink); font-weight:700; font-size:15px; border-top:1px solid var(--line); margin-top:6px; padding-top:10px; }
+
+  /* Quote / invoice preview document */
+  .doc-preview{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:22px; position:sticky; top:76px; }
+  .doc-letterhead{ display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--ink); padding-bottom:12px; margin-bottom:14px; }
+  .doc-brand{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; }
+  .doc-brand-sub{ font-size:10.5px; color:var(--ink-faint); margin-top:2px; }
+  .doc-meta{ text-align:right; font-size:11px; color:var(--ink-soft); line-height:1.6; }
+  .doc-to{ font-size:12.5px; margin-bottom:14px; }
+  .doc-to b{ display:block; font-size:13.5px; margin-bottom:2px; }
+  .doc-table{ width:100%; font-size:12px; border-collapse:collapse; margin-bottom:10px; }
+  .doc-table th{ text-align:left; font-size:10.5px; color:var(--ink-faint); border-bottom:1px solid var(--line); padding:6px 4px; background:none; }
+  .doc-table td{ padding:7px 4px; border-bottom:1px solid var(--line-soft); font-size:12px; }
+  .doc-promo{ background:var(--brand-tint); color:var(--brand-dark); font-size:11px; padding:8px 10px; border-radius:6px; margin-top:12px; }
+  .doc-actions{ display:flex; gap:8px; margin-top:16px; }
+  .doc-actions .btn{ flex:1; justify-content:center; }
+
+  .qa-note{ display:flex; gap:8px; align-items:flex-start; background:var(--brand-tint); border-radius:8px; padding:10px 12px; font-size:12px; color:var(--brand-dark); margin-bottom:18px; }
+  .qa-note svg{ width:15px; height:15px; flex-shrink:0; margin-top:1px; }
+
+  ::selection{ background:var(--brand-tint); }
+  @media (max-width:1040px){
+    .kpi-row, .veh-grid{ grid-template-columns:repeat(2,1fr); }
+    .two-col, .form-grid{ grid-template-columns:1fr; }
+  }
+
+  /* =============== DRIVER MOBILE VIEW =============== */
+  body.driver-mode .app{ display:none; }
+  #driver-shell{ display:none; min-height:100vh; align-items:flex-start; justify-content:center; padding:40px 20px; }
+  body.driver-mode #driver-shell{ display:flex; }
+  .phone{ width:380px; background:var(--card); border-radius:34px; border:9px solid #0F1E1B; overflow:hidden; box-shadow:0 20px 50px rgba(15,30,27,.25); }
+  .phone-status{ display:flex; justify-content:space-between; padding:9px 20px 3px; font-size:11px; font-weight:600; color:var(--ink); }
+  .phone-head{ padding:6px 18px 14px; display:flex; align-items:center; justify-content:space-between; }
+  .phone-head-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; }
+  .phone-head-sub{ font-size:10.5px; color:var(--ink-faint); }
+  .back-to-admin{ font-size:11px; font-weight:600; color:var(--brand); background:var(--brand-tint); padding:5px 10px; border-radius:20px; border:none; }
+  .phone-body{ padding:0 16px 18px; height:640px; overflow-y:auto; background:var(--paper); }
+  .p-card{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 15px; margin-bottom:14px; }
+  .p-card h4{ margin:0 0 8px; font-size:13px; font-weight:700; }
+  .p-trip-route{ font-size:14.5px; font-weight:700; font-family:'Space Grotesk',sans-serif; }
+  .p-trip-guest{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .p-row{ display:flex; justify-content:space-between; font-size:12px; color:var(--ink-soft); padding:5px 0; border-top:1px solid var(--line-soft); }
+  .p-row:first-of-type{ border-top:none; }
+  .p-btn{ width:100%; padding:11px; border-radius:9px; background:var(--brand); color:#fff; font-weight:700; font-size:13px; border:none; margin-top:10px; }
+  .p-btn.ghost{ background:var(--card); color:var(--brand-dark); border:1px solid var(--brand); }
+  .p-field{ margin-bottom:10px; }
+  .p-field label{ font-size:11px; font-weight:600; color:var(--ink-soft); display:block; margin-bottom:4px; }
+  .p-field input, .p-field textarea{ width:100%; border:1px solid var(--line); border-radius:8px; padding:9px 10px; font-size:13px; font-family:inherit; }
+  .p-upload{ border:1.5px dashed var(--line); border-radius:9px; padding:14px; text-align:center; font-size:11.5px; color:var(--ink-faint); }
+  .p-upload svg{ width:18px; height:18px; margin-bottom:4px; color:var(--ink-faint); }
+  .p-tabbar{ display:flex; border-top:1px solid var(--line); background:var(--card); }
+  .p-tab{ flex:1; text-align:center; padding:10px 0 8px; font-size:10px; font-weight:600; color:var(--ink-faint); border:none; background:none; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .p-tab.active{ color:var(--brand); }
+  .p-tab svg{ width:18px; height:18px; }
+  .p-flag{ background:var(--amber-tint); color:var(--amber-ink); font-size:11px; padding:8px 10px; border-radius:8px; margin-top:8px; }
+
+  /* ---- Add driver modal ---- */
+  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(15,25,23,.45); z-index:50; align-items:flex-start; justify-content:center; padding:40px 20px; overflow-y:auto; }
+  .modal-overlay.open{ display:flex; }
+  .modal{ background:var(--card); border-radius:12px; width:100%; max-width:620px; overflow:hidden; }
+  .modal-head{ display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--line); }
+  .modal-head h3{ margin:0; font-size:15.5px; font-weight:600; }
+  .modal-close{ width:28px; height:28px; border-radius:7px; border:1px solid var(--line); background:var(--card); display:flex; align-items:center; justify-content:center; }
+  .modal-close svg{ width:14px; height:14px; }
+  .modal-body{ padding:20px; max-height:70vh; overflow-y:auto; }
+  .modal-foot{ display:flex; justify-content:flex-end; gap:10px; padding:14px 20px; border-top:1px solid var(--line); background:#FAFBFA; }
+  .driver-type-toggle{ display:flex; gap:8px; margin-bottom:18px; }
+  .driver-type-btn{ flex:1; padding:11px; border-radius:8px; border:1.5px solid var(--line); background:var(--card); text-align:left; }
+  .driver-type-btn.active{ border-color:var(--brand); background:var(--brand-tint); }
+  .driver-type-btn b{ display:block; font-size:13px; }
+  .driver-type-btn span{ font-size:11px; color:var(--ink-soft); }
+  .doc-row{ display:flex; align-items:center; justify-content:space-between; border:1px solid var(--line); border-radius:8px; padding:9px 12px; margin-bottom:8px; }
+  .doc-row-label{ font-size:12.5px; font-weight:600; }
+  .doc-row-sub{ font-size:11px; color:var(--ink-faint); margin-top:1px; }
+  .temp-only{ display:none; }
+  .temp-only.show{ display:block; }
+  .vendor-only{ display:none; }
+  .vendor-only.show{ display:block; }
+  .severity-toggle{ display:flex; gap:8px; margin-bottom:16px; }
+  .severity-btn{ flex:1; padding:10px; border-radius:8px; border:1.5px solid var(--line); background:var(--card); text-align:left; }
+  .severity-btn b{ display:block; font-size:12.5px; }
+  .severity-btn span{ font-size:10.5px; color:var(--ink-soft); }
+  .severity-btn[data-sev="note"].active{ border-color:var(--ink-faint); background:var(--line-soft); }
+  .severity-btn[data-sev="caution"].active{ border-color:var(--amber); background:var(--amber-tint); }
+  .severity-btn[data-sev="avoid"].active{ border-color:var(--red); background:var(--red-tint); }
+</style>
+</head>
+<body>
+
+<!-- ================================================================ ADMIN APP ================================================================ -->
+<div class="app">
+
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><span>S</span></div>
+      <div>
+        <div class="brand-name">Starciti</div>
+        <div class="brand-sub">Travel &amp; Fleet Desk</div>
+      </div>
+    </div>
+
+    <div class="nav-group-label">Sales</div>
+    <button class="nav-item active" data-view="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-item" data-view="enquiries">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 1 1-4.1-7.3L21 3l-1.2 4a8.46 8.46 0 0 1 1.2 4.5z"/></svg>
+      Enquiries
+    </button>
+    <button class="nav-item" data-view="quotebuilder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+      Quote builder
+    </button>
+    <button class="nav-item" data-view="bookings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+      Bookings
+    </button>
+
+    <div class="nav-group-label">Operations</div>
+    <button class="nav-item" data-view="tripplanning">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-5.5-2V4L9 6m0 14l6-2m-6 2V6m6 12l5.5 2V6L15 4m0 14V4m0 0L9 6"/></svg>
+      Trip planning
+    </button>
+    <button class="nav-item" data-view="fleet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.5-5A2 2 0 0 1 6.4 6.5h11.2A2 2 0 0 1 19.5 8L21 13v5a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H6v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg>
+      Vehicles &amp; drivers
+    </button>
+    <button class="nav-item" data-view="staff">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Staff &amp; attendance
+    </button>
+    <button class="nav-item" data-view="expenses">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/><circle cx="12" cy="12" r="4.5"/></svg>
+      Driver expenses
+      <span class="nav-badge">3</span>
+    </button>
+    <button class="nav-item" data-view="flags">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22V15"/></svg>
+      Notes &amp; flags
+      <span class="nav-badge" style="background:var(--red);color:#fff">2</span>
+    </button>
+
+    <div class="nav-group-label">Money</div>
+    <button class="nav-item" data-view="invoices">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg>
+      Invoices
+    </button>
+    <button class="nav-item" data-view="accounts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 7l2-4h14l2 4M3 7v13h18V7M9 12v4M15 12v4"/></svg>
+      Accounts
+    </button>
+    <button class="nav-item" data-view="reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9M10 21V3M17 21v-7"/></svg>
+      Reports
+    </button>
+
+    <div class="sidebar-foot">
+      <div class="role-toggle">
+        <button class="role-btn active" id="admin-role-btn">Admin view</button>
+        <button class="role-btn" id="driver-role-btn">Driver view</button>
+      </div>
+      <div class="user-row">
+        <div class="user-avatar">RS</div>
+        <div><div class="user-name">Raj</div><div class="user-role">Admin</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-sub" id="topbar-sub">Tuesday, 1 September</div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          <input placeholder="Search trips, guests, vehicles…" />
+        </div>
+        <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot"></span></button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ============ DASHBOARD ============ -->
+      <div class="view active" id="view-dashboard">
+        <div class="page-head">
+          <div><h1>Good morning, Renju</h1><p>Here's where things stand across the business today.</p></div>
+          <button class="btn btn-primary" onclick="showView('quotebuilder')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>New quotation</button>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi-card"><div class="kpi-label">Trips today</div><div class="kpi-value">7</div><div class="kpi-delta">2 pickups before noon</div></div>
+          <div class="kpi-card"><div class="kpi-label">Revenue this month</div><div class="kpi-value">₹6.8L</div><div class="kpi-delta">↑ 12% vs last month</div></div>
+          <div class="kpi-card"><div class="kpi-label">Pending receivables</div><div class="kpi-value">₹1.42L</div><div class="kpi-delta muted">Across 9 invoices</div></div>
+          <div class="kpi-card"><div class="kpi-label">Flagged expense entries</div><div class="kpi-value">3</div><div class="kpi-delta warn">Needs review today</div></div>
+        </div>
+
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head"><h3>Today's trips</h3><a class="link" href="#" onclick="showView('bookings');return false;">View all bookings</a></div>
+            <table>
+              <thead><tr><th>Guest</th><th>Route</th><th>Vehicle · driver</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td><div class="cell-primary">Anoop &amp; family</div><div class="cell-sub">4 pax · TrivandrumMunnar</div></td><td>TVM → Munnar</td><td><span class="avatar-sm">SK</span>KL-01-BM-4521</td><td><span class="pill pill-brand">On trip</span></td></tr>
+                <tr><td><div class="cell-primary">Greenfield Corp</div><div class="cell-sub">Airport transfer</div></td><td>TVM Airport → Kovalam</td><td><span class="avatar-sm">RJ</span>KL-07-AZ-1190</td><td><span class="pill pill-grey">Scheduled 2:30 PM</span></td></tr>
+                <tr><td><div class="cell-primary">Fabien Laurent</div><div class="cell-sub">Agent: Kerala Escapes</div></td><td>Alleppey → Kumarakom</td><td><span class="avatar-sm">MP</span>KL-05-CJ-7788</td><td><span class="pill pill-brand">On trip</span></td></tr>
+                <tr><td><div class="cell-primary">St. Xavier's School</div><div class="cell-sub">Monthly contract</div></td><td>Local — Trivandrum</td><td><span class="avatar-sm">TB</span>KL-01-BR-2290</td><td><span class="pill pill-grey">Scheduled 3:45 PM</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Needs your attention</h3></div>
+            <table>
+              <tbody>
+                <tr><td><div class="cell-primary">Fuel efficiency outlier</div><div class="cell-sub">KL-07-AZ-1190 · Trip #4482</div></td><td style="text-align:right"><span class="pill pill-amber">Review</span></td></tr>
+                <tr><td><div class="cell-primary">RC expiring in 6 days</div><div class="cell-sub">KL-05-CJ-7788</div></td><td style="text-align:right"><span class="pill pill-amber">Renew</span></td></tr>
+                <tr><td><div class="cell-primary">Invoice overdue 14 days</div><div class="cell-sub">Greenfield Corp · ₹28,400</div></td><td style="text-align:right"><span class="pill pill-red">Follow up</span></td></tr>
+                <tr><td><div class="cell-primary">EMI due in 3 days</div><div class="cell-sub">KL-01-BM-4521 · ₹18,500</div></td><td style="text-align:right"><span class="pill pill-grey">Scheduled</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ ENQUIRIES ============ -->
+      <div class="view" id="view-enquiries">
+        <div class="page-head">
+          <div><h1>Enquiries</h1><p>Every new request, from first contact to a confirmed booking.</p></div>
+          <button class="btn btn-primary" onclick="showView('quotebuilder')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>New enquiry</button>
+        </div>
+        <div class="panel"><table>
+          <thead><tr><th>Guest</th><th>Source</th><th>Trip</th><th>Dates</th><th>Quote</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><div class="cell-primary">Anoop &amp; family</div><div class="cell-sub">4 pax</div></td><td><span class="pill pill-grey">Direct</span></td><td>Trivandrum → Munnar, 3D/2N</td><td>12–14 Sep</td><td class="mono-num">₹24,000</td><td><span class="pill pill-brand">Confirmed</span></td></tr>
+            <tr><td><div class="cell-primary">Fabien Laurent</div><div class="cell-sub">Kerala Escapes (agent)</div></td><td><span class="pill pill-grey">Agent</span></td><td>Alleppey houseboat + Kumarakom</td><td>1–3 Sep</td><td class="mono-num">₹31,500</td><td><span class="pill pill-brand">Confirmed</span></td></tr>
+            <tr><td><div class="cell-primary">Meridian Resorts</div><div class="cell-sub">Hotel contract renewal</div></td><td><span class="pill pill-grey">Direct</span></td><td>Vehicles on call, 3 months</td><td>From 1 Oct</td><td class="mono-num">₹1,10,000/mo</td><td><span class="pill pill-grey">Quote sent</span></td></tr>
+            <tr><td><div class="cell-primary">Priya Menon</div><div class="cell-sub">2 pax</div></td><td><span class="pill pill-grey">Internal sales</span></td><td>Wayanad weekend, 2D/1N</td><td>20–21 Sep</td><td class="mono-num">₹9,800</td><td><span class="pill pill-grey">Quote sent</span></td></tr>
+            <tr><td><div class="cell-primary">Sunrise Academy</div><div class="cell-sub">School trip enquiry</div></td><td><span class="pill pill-grey">Direct</span></td><td>Local sightseeing, 40 pax</td><td>28 Sep</td><td class="mono-num">—</td><td><span class="pill pill-red">Awaiting reply</span></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <!-- ============ QUOTE BUILDER ============ -->
+      <div class="view" id="view-quotebuilder">
+        <div class="page-head">
+          <div><h1>Build a quotation</h1><p>Pick who it's for — the fields and the final document adjust to match.</p></div>
+        </div>
+
+        <div class="subtabs" id="quote-customer-tabs">
+          <button class="subtab-btn active" data-qtab="individual">Individual / Family</button>
+          <button class="subtab-btn" data-qtab="agent">Agent / Referral</button>
+          <button class="subtab-btn" data-qtab="corporate">Corporate</button>
+          <button class="subtab-btn" data-qtab="longterm">Long-term contract</button>
+          <button class="subtab-btn" data-qtab="hotel">Hotel contract</button>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="panel"><div class="panel-body">
+              <div class="form-grid">
+                <div class="field"><label id="qb-name-label">Guest name</label><input value="Anoop Krishnan"></div>
+                <div class="field"><label>Phone</label><input value="+91 98470 XXXXX"></div>
+                <div class="field" id="qb-agent-field" style="display:none"><label>Agent / referred by</label><input placeholder="Kerala Escapes"></div>
+                <div class="field"><label>Group size</label><input value="4 pax"></div>
+                <div class="field"><label>Pickup date &amp; place</label><input value="12 Sep, Trivandrum"></div>
+                <div class="field"><label>Drop date &amp; place</label><input value="14 Sep, Munnar"></div>
+              </div>
+
+              <div class="field full" style="margin-top:13px">
+                <label>Destinations</label>
+                <div class="chip-row">
+                  <span class="chip">Munnar ×</span><span class="chip">Thekkady ×</span>
+                  <button class="chip-add">+ Add place</button>
+                </div>
+              </div>
+
+              <div class="field full" style="margin-top:16px">
+                <label>Itinerary &amp; line items</label>
+                <div class="line-table">
+                  <table>
+                    <thead><tr><th>Day</th><th>Details</th><th>Vehicle</th><th>Stay</th><th>Food</th><th style="text-align:right">Cost</th></tr></thead>
+                    <tbody>
+                      <tr><td>Day 1</td><td>TVM → Munnar, sightseeing</td><td>Innova</td><td>Resort, standard</td><td>MAP</td><td class="mono-num" style="text-align:right">₹9,500</td></tr>
+                      <tr><td>Day 2</td><td>Munnar local + tea gardens</td><td>Innova</td><td>Resort, standard</td><td>MAP</td><td class="mono-num" style="text-align:right">₹8,200</td></tr>
+                      <tr><td>Day 3</td><td>Munnar → drop at TVM</td><td>Innova</td><td>—</td><td>Breakfast</td><td class="mono-num" style="text-align:right">₹6,300</td></tr>
+                    </tbody>
+                  </table>
+                  <button class="add-line-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add a day</button>
+                </div>
+              </div>
+
+              <div class="field full" style="margin-top:13px"><label>Notes for the guest</label><textarea>AC vehicle throughout. Entry tickets at Eravikulam National Park not included.</textarea></div>
+            </div></div>
+          </div>
+
+          <div class="doc-preview">
+            <div class="doc-letterhead">
+              <div><div class="doc-brand">Starciti Travels</div><div class="doc-brand-sub">Trivandrum, Kerala</div></div>
+              <div class="doc-meta">Quote #Q-0219<br>Valid till 8 Sep<br>Prepared by Raj</div>
+            </div>
+            <div class="doc-to"><b>Anoop Krishnan</b>4 pax · Trivandrum → Munnar<br>12–14 Sep, 3 Days / 2 Nights</div>
+            <table class="doc-table">
+              <thead><tr><th>Item</th><th style="text-align:right">Amount</th></tr></thead>
+              <tbody>
+                <tr><td>Vehicle — Innova, 3 days</td><td class="mono-num" style="text-align:right">₹13,500</td></tr>
+                <tr><td>Stay — Resort, 2 nights, MAP</td><td class="mono-num" style="text-align:right">₹8,500</td></tr>
+                <tr><td>Driver allowance &amp; toll</td><td class="mono-num" style="text-align:right">₹2,000</td></tr>
+              </tbody>
+            </table>
+            <div class="price-summary">
+              <div class="price-row"><span>Subtotal</span><span class="mono-num">₹24,000</span></div>
+              <div class="price-row"><span>GST (not applicable)</span><span class="mono-num">—</span></div>
+              <div class="price-row total"><span>Total</span><span class="mono-num">₹24,000</span></div>
+            </div>
+            <div class="doc-promo">✦ Ask us about our Wayanad monsoon weekend package.</div>
+            <div class="doc-actions">
+              <button class="btn btn-ghost">Save draft</button>
+              <button class="btn btn-primary" onclick="showView('billing_success')">Send to guest</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ BOOKINGS ============ -->
+      <div class="view" id="view-bookings">
+        <div class="page-head"><div><h1>Bookings</h1><p>Confirmed trips, with vehicle and driver assigned.</p></div></div>
+        <div class="panel"><table>
+          <thead><tr><th>Trip</th><th>Guest</th><th>Vehicle · driver</th><th>Stay / food / activities</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="cell-primary">#4482</td><td>Anoop &amp; family</td><td><span class="avatar-sm">SK</span>KL-01-BM-4521 · Suresh K.</td><td>Resort, MAP · Boating in Munnar</td><td><span class="pill pill-brand">On trip</span></td></tr>
+            <tr><td class="cell-primary">#4483</td><td>Fabien Laurent</td><td><span class="avatar-sm">MP</span>KL-05-CJ-7788 · Manoj P.</td><td>Houseboat, all meals</td><td><span class="pill pill-brand">On trip</span></td></tr>
+            <tr><td class="cell-primary">#4484</td><td>Greenfield Corp</td><td><span class="avatar-sm">RJ</span>KL-07-AZ-1190 · Rajesh J.</td><td>Airport transfer only</td><td><span class="pill pill-grey">Scheduled</span></td></tr>
+            <tr><td class="cell-primary">#4485</td><td>St. Xavier's School</td><td><span class="avatar-sm">TB</span>KL-01-BR-2290 · Thomas B.</td><td>—</td><td><span class="pill pill-grey">Scheduled</span></td></tr>
+            <tr><td class="cell-primary">#4478</td><td>Priya Menon</td><td><span class="avatar-sm">SK</span>KL-01-BM-4521 · Suresh K.</td><td>Homestay, breakfast only</td><td><span class="pill pill-grey">Completed</span></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <!-- ============ TRIP PLANNING ============ -->
+      <div class="view" id="view-tripplanning">
+        <div class="page-head"><div><h1>Trip planning</h1><p>Assign vehicle, driver, stay, food and activities to each confirmed trip.</p></div></div>
+        <div class="panel"><table>
+          <thead><tr><th>Trip</th><th>Vehicle</th><th>Driver</th><th>Hotel / room</th><th>Food plan</th><th>Activities</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="cell-primary">#4482 · Anoop &amp; family</td><td>KL-01-BM-4521</td><td>Suresh K.</td><td>Misty Hills Resort, Deluxe</td><td>MAP</td><td>Boating, tea garden walk</td><td><span class="pill pill-brand">Planned</span></td></tr>
+            <tr><td class="cell-primary">#4483 · Fabien Laurent</td><td>KL-05-CJ-7788</td><td>Manoj P.</td><td>Houseboat, deluxe cabin</td><td>All meals</td><td>Sunset cruise</td><td><span class="pill pill-brand">Planned</span></td></tr>
+            <tr><td class="cell-primary">#4486 · Priya Menon (Wayanad)</td><td>—</td><td>—</td><td>Homestay, TBD</td><td>Breakfast</td><td>—</td><td><span class="pill pill-amber">Assign vehicle</span></td></tr>
+            <tr><td class="cell-primary">#4487 · Meridian Resorts (on-call)</td><td>Pool — rotating</td><td>Pool — rotating</td><td>—</td><td>—</td><td>—</td><td><span class="pill pill-grey">Contract, no single trip</span></td></tr>
+          </tbody>
+        </table>
+        <div style="padding:14px 18px 18px">
+          <div class="flag-note"><b>Flag surfaced while planning #4486.</b> KL-11-EF-9081 (Wayanad Wheels) is under consideration for this trip and carries a <span class="pill pill-amber" style="vertical-align:middle">Caution</span> — AC has failed mid-trip twice this season. Confirm servicing with the vendor before assigning, or pick a different vehicle. <a href="#" style="color:var(--amber-ink);font-weight:700" onclick="showView('flags');return false;">View flag history</a></div>
+        </div>
+        </div>
+      </div>
+
+      <!-- ============ FLEET ============ -->
+      <div class="view" id="view-fleet">
+        <div class="page-head">
+          <div><h1>Vehicles &amp; drivers</h1><p>Owned and hired vehicles, with documents and maintenance in one place.</p></div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-ghost" onclick="openDriverModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Add driver</button>
+            <button class="btn btn-ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Add vehicle</button>
+          </div>
+        </div>
+        <div class="veh-grid">
+          <div class="veh-card"><div class="veh-top"><div><div class="veh-reg">KL-01-BM-4521</div><div class="veh-type">Toyota Innova · Owned</div></div><span class="pill pill-brand">Active</span></div>
+            <div class="veh-meta"><span>Driver</span><span>Suresh K.</span></div>
+            <div class="veh-meta"><span>Odometer</span><span class="mono-num">1,42,880 km</span></div>
+            <div class="veh-meta"><span>Insurance</span><span>Valid to Feb 2027</span></div>
+            <div class="veh-meta"><span>Next service</span><span>800 km away</span></div></div>
+          <div class="veh-card"><div class="veh-top"><div><div class="veh-reg">KL-05-CJ-7788</div><div class="veh-type">Maruti Ertiga · Owned</div></div><span class="pill pill-brand">Active</span></div>
+            <div class="veh-meta"><span>Driver</span><span>Manoj P.</span></div>
+            <div class="veh-meta"><span>Odometer</span><span class="mono-num">88,410 km</span></div>
+            <div class="veh-meta"><span>RC renewal</span><span style="color:var(--amber-ink);font-weight:600">Due in 6 days</span></div>
+            <div class="veh-meta"><span>Next service</span><span>2,300 km away</span></div></div>
+          <div class="veh-card"><div class="veh-top"><div><div class="veh-reg">KL-07-AZ-1190</div><div class="veh-type">Tempo Traveller · Hired</div></div><span class="pill pill-brand">Active</span></div>
+            <div class="veh-meta"><span>Vendor</span><span>Backwater Fleet Co.</span></div>
+            <div class="veh-meta"><span>Driver</span><span>Rajesh J. (vendor staff)</span></div>
+            <div class="veh-meta"><span>Contract</span><span>₹4,200/day + ₹9/extra km</span></div>
+            <div class="veh-meta"><span>Pre-trip check</span><span>Passed, 1 Sep</span></div></div>
+          <div class="veh-card"><div class="veh-top"><div><div class="veh-reg">KL-01-BR-2290</div><div class="veh-type">Force Traveller · Owned</div></div><span class="pill pill-brand">Active</span></div>
+            <div class="veh-meta"><span>Driver</span><span>Thomas B.</span></div>
+            <div class="veh-meta"><span>Odometer</span><span class="mono-num">2,01,120 km</span></div>
+            <div class="veh-meta"><span>EMI</span><span>₹18,500 due in 3 days</span></div>
+            <div class="veh-meta"><span>Next service</span><span>Overdue by 400 km</span></div></div>
+          <div class="veh-card"><div class="veh-top"><div><div class="veh-reg">KL-09-DK-3305</div><div class="veh-type">Sedan · Owned</div></div><span class="pill pill-grey">In service</span></div>
+            <div class="veh-meta"><span>Driver</span><span>Unassigned</span></div>
+            <div class="veh-meta"><span>Odometer</span><span class="mono-num">76,050 km</span></div>
+            <div class="veh-meta"><span>Workshop</span><span>Brake check, back Thu</span></div>
+            <div class="veh-meta"><span>Pollution cert.</span><span>Valid to Nov 2026</span></div></div>
+          <div class="veh-card"><div class="veh-top"><div><div class="veh-reg">KL-11-EF-9081</div><div class="veh-type">Innova Crysta · Hired</div></div><span class="pill pill-grey">On call</span></div>
+            <div class="veh-meta"><span>Vendor</span><span>Wayanad Wheels</span></div>
+            <div class="veh-meta"><span>Driver</span><span>Anil Kumar (vendor staff)</span></div>
+            <div class="veh-meta"><span>Contract</span><span>Per-trip, no minimum</span></div>
+            <div class="veh-meta"><span>Pre-trip check</span><span>Pending</span></div>
+            <div class="flag-note" style="margin-top:10px"><b>Caution flagged.</b> AC has broken down mid-trip twice this season — <a href="#" style="color:var(--amber-ink);font-weight:700" onclick="showView('flags');return false;">see note</a>.</div></div>
+        </div>
+
+        <div class="panel" style="margin-top:20px">
+          <div class="panel-head"><h3>Drivers</h3><a class="link" href="#" onclick="showView('flags');return false;">View all flags</a></div>
+          <table>
+            <thead><tr><th>Driver</th><th>Type</th><th>Vehicle</th><th>Documents</th><th>Status</th><th>Flag</th></tr></thead>
+            <tbody>
+              <tr><td><span class="avatar-sm">SK</span>Suresh K.</td><td><span class="pill pill-grey">Permanent</span></td><td>KL-01-BM-4521</td><td>All verified</td><td><span class="pill pill-brand">Active</span></td><td>—</td></tr>
+              <tr><td><span class="avatar-sm">MP</span>Manoj P.</td><td><span class="pill pill-grey">Permanent</span></td><td>KL-05-CJ-7788</td><td>All verified</td><td><span class="pill pill-brand">Active</span></td><td>—</td></tr>
+              <tr><td><span class="avatar-sm">TB</span>Thomas B.</td><td><span class="pill pill-grey">Permanent</span></td><td>KL-01-BR-2290</td><td>All verified</td><td><span class="pill pill-brand">Active</span></td><td>—</td></tr>
+              <tr class="flag-row"><td><span class="avatar-sm">AD</span>Arun Dev</td><td><span class="pill pill-amber">Temporary</span></td><td>KL-09-DK-3305</td><td>Police clearance pending</td><td><span class="pill pill-amber">Pending verification</span></td><td><span class="pill pill-amber">Caution</span></td></tr>
+              <tr><td><span class="avatar-sm">VN</span>Vishnu Nair</td><td><span class="pill pill-amber">Temporary</span></td><td>Unassigned</td><td>All verified</td><td><span class="pill pill-grey">Expired · 28 Aug</span></td><td>—</td></tr>
+              <tr class="flag-row"><td><span class="avatar-sm">AK</span>Anil Kumar</td><td><span class="pill pill-grey">Vendor-supplied</span></td><td>KL-11-EF-9081</td><td>Vendor's responsibility</td><td><span class="pill pill-brand">Active</span></td><td><span class="pill pill-red">Avoid</span></td></tr>
+            </tbody>
+          </table>
+          <div style="padding:14px 18px 18px">
+            <div class="flag-note"><b>Arun Dev — temporary, valid till 5 Sep.</b> Covering KL-09-DK-3305 while it's booked out short-notice. Licence and ID are verified; police clearance is still under review, so trips he's on are flagged for review in Driver Expenses until it clears.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ STAFF & ATTENDANCE ============ -->
+      <div class="view" id="view-staff">
+        <div class="page-head"><div><h1>Staff &amp; attendance</h1><p>Daily attendance, advances, and incentive-linked salary in one place.</p></div></div>
+
+        <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kpi-card"><div class="kpi-label">Present today</div><div class="kpi-value">9 / 11</div><div class="kpi-delta muted">2 on leave</div></div>
+          <div class="kpi-card"><div class="kpi-label">Salary advances outstanding</div><div class="kpi-value">₹14,000</div><div class="kpi-delta warn">2 staff</div></div>
+          <div class="kpi-card"><div class="kpi-label">Referral incentives, Sep</div><div class="kpi-value">₹6,200</div><div class="kpi-delta muted">Agents + drivers</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>Today's attendance</h3></div>
+          <table>
+            <thead><tr><th>Staff</th><th>Role</th><th>Today</th><th>This month</th><th>Incentives, Sep</th></tr></thead>
+            <tbody>
+              <tr><td><span class="avatar-sm">SK</span>Suresh K.</td><td>Driver</td><td><span class="pill pill-brand">Present</span></td><td>21 present · 1 leave</td><td class="mono-num">₹3,400</td></tr>
+              <tr><td><span class="avatar-sm">MP</span>Manoj P.</td><td>Driver</td><td><span class="pill pill-brand">Present</span></td><td>22 present · 0 leave</td><td class="mono-num">₹2,900</td></tr>
+              <tr><td><span class="avatar-sm">TB</span>Thomas B.</td><td>Driver</td><td><span class="pill pill-amber">Half day</span></td><td>19 present · 2 leave</td><td class="mono-num">₹1,800</td></tr>
+              <tr><td><span class="avatar-sm">AJ</span>Ajay Jose</td><td>Front desk</td><td><span class="pill pill-red">On leave</span></td><td>18 present · 3 leave</td><td class="mono-num">—</td></tr>
+              <tr><td><span class="avatar-sm">NR</span>Nikhil Raj</td><td>Sales</td><td><span class="pill pill-brand">Present</span></td><td>22 present · 0 leave</td><td class="mono-num">₹5,100</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ DRIVER EXPENSES ============ -->
+      <div class="view" id="view-expenses">
+        <div class="page-head"><div><h1>Driver expenses</h1><p>Every fuel and odometer entry drivers log, checked automatically before it's settled.</p></div></div>
+        <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kpi-card"><div class="kpi-label">Entries this week</div><div class="kpi-value">46</div><div class="kpi-delta muted">Across 6 vehicles</div></div>
+          <div class="kpi-card"><div class="kpi-label">Flagged for review</div><div class="kpi-value">3</div><div class="kpi-delta warn">Held from settlement</div></div>
+          <div class="kpi-card"><div class="kpi-label">Avg. fleet efficiency</div><div class="kpi-value">11.4 km/l</div><div class="kpi-delta">Within expected range</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Review queue</h3></div>
+          <table>
+            <thead><tr><th>Vehicle · driver</th><th>Trip</th><th>Logged</th><th>Rule triggered</th><th></th></tr></thead>
+            <tbody>
+              <tr class="flag-row"><td><span class="avatar-sm">RJ</span>KL-07-AZ-1190 · Rajesh J.</td><td>#4482 · TVM → Munnar</td><td>18.2 km/l · 42L @ pump</td><td><span class="pill pill-amber">Fuel efficiency outlier</span></td><td style="text-align:right"><button class="btn btn-ghost btn-sm">Review</button></td></tr>
+              <tr class="flag-row"><td><span class="avatar-sm">MP</span>KL-05-CJ-7788 · Manoj P.</td><td>#4471 · Local</td><td>Start 88,410 · Prev end 88,540</td><td><span class="pill pill-amber">Odometer rollback</span></td><td style="text-align:right"><button class="btn btn-ghost btn-sm">Review</button></td></tr>
+              <tr class="flag-row"><td><span class="avatar-sm">TB</span>KL-01-BR-2290 · Thomas B.</td><td>#4465 · Airport runs</td><td>Receipt #22190, 2nd use</td><td><span class="pill pill-amber">Duplicate receipt</span></td><td style="text-align:right"><button class="btn btn-ghost btn-sm">Review</button></td></tr>
+              <tr><td><span class="avatar-sm">SK</span>KL-01-BM-4521 · Suresh K.</td><td>#4478 · Wayanad</td><td>10.8 km/l · 28L @ pump</td><td><span class="pill pill-grey">Cleared</span></td><td style="text-align:right"><button class="btn btn-ghost btn-sm" disabled>Settled</button></td></tr>
+            </tbody>
+          </table>
+          <div style="padding:14px 18px 18px">
+            <div class="flag-note"><b>Trip #4482 — fuel efficiency outlier.</b> Rajesh logged 42L against 264 km driven (6.3 km/l), well below KL-07-AZ-1190's usual 12–14 km/l range. Driver's note: "AC running full trip, hill roads." Approve, adjust the logged litres, or reject and ask the driver to re-confirm before this is settled.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ NOTES & FLAGS ============ -->
+      <div class="view" id="view-flags">
+        <div class="page-head">
+          <div><h1>Notes &amp; flags</h1><p>Internal-only observations on drivers, vehicles, hotels and vendors — surfaced again wherever they're picked for a trip.</p></div>
+          <button class="btn btn-primary" onclick="openFlagModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>New flag</button>
+        </div>
+
+        <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kpi-card"><div class="kpi-label">Flagged entities</div><div class="kpi-value">5</div><div class="kpi-delta muted">Drivers, vehicles, hotels, vendors</div></div>
+          <div class="kpi-card"><div class="kpi-label">Avoid level</div><div class="kpi-value">1</div><div class="kpi-delta" style="color:var(--red)">Needs admin sign-off to assign</div></div>
+          <div class="kpi-card"><div class="kpi-label">Caution level</div><div class="kpi-value">3</div><div class="kpi-delta warn">Visible warning only</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>All flags</h3></div>
+          <table>
+            <thead><tr><th>Entity</th><th>Type</th><th>Severity</th><th>Note</th><th>Added</th></tr></thead>
+            <tbody>
+              <tr class="flag-row">
+                <td><span class="avatar-sm">AK</span>Anil Kumar</td>
+                <td><span class="pill pill-grey">Driver · Vendor-supplied</span></td>
+                <td><span class="pill pill-red">Avoid</span></td>
+                <td>Reported rash driving on hill roads by guest; vendor Backwater Fleet Co. informed. Do not assign without checking with vendor first.</td>
+                <td>Raj · 12 Aug</td>
+              </tr>
+              <tr class="flag-row">
+                <td><span class="avatar-sm">AD</span>Arun Dev</td>
+                <td><span class="pill pill-grey">Driver · Temporary</span></td>
+                <td><span class="pill pill-amber">Caution</span></td>
+                <td>Was 40 min late to a pickup on 22 Aug, blamed traffic. Confirm pickup time again a day before, next time.</td>
+                <td>Nikhil Raj · 22 Aug</td>
+              </tr>
+              <tr class="flag-row">
+                <td>Green Valley Resorts</td>
+                <td><span class="pill pill-grey">Hotel</span></td>
+                <td><span class="pill pill-amber">Caution</span></td>
+                <td>Guest complained rooms weren't ready at agreed check-in time twice in July. Confirm check-in slot by phone before sending guests.</td>
+                <td>Raj · 30 Jul</td>
+              </tr>
+              <tr class="flag-row">
+                <td>KL-11-EF-9081</td>
+                <td><span class="pill pill-grey">Vehicle · Hired</span></td>
+                <td><span class="pill pill-amber">Caution</span></td>
+                <td>AC has broken down mid-trip twice this season. Ask Wayanad Wheels for service confirmation before booking on hot-weather routes.</td>
+                <td>Raj · 15 Aug</td>
+              </tr>
+              <tr>
+                <td>Kerala Escapes</td>
+                <td><span class="pill pill-grey">Vendor / Agent</span></td>
+                <td><span class="pill pill-grey">Note</span></td>
+                <td>Consistently sends detailed guest requirements upfront — good agent to fast-track quotes for.</td>
+                <td>Nikhil Raj · 3 Aug</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="qa-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16v-4M12 8h.01"/><circle cx="12" cy="12" r="9"/></svg>
+          Flags never appear on quotes, invoices, or in the driver app — only Admin and Staff see them. They resurface automatically when the same driver, vehicle, or hotel is picked again in Trip Planning or the Quote Builder.
+        </div>
+      </div>
+
+      <!-- ============ INVOICES ============ -->
+      <div class="view" id="view-invoices">
+        <div class="page-head"><div><h1>Invoices</h1><p>Generate any bill type the business uses, then track it through to payment.</p></div></div>
+
+        <div class="tabs" id="invoice-type-tabs">
+          <button class="tab-btn active" data-itab="regular">Regular taxi</button>
+          <button class="tab-btn" data-itab="tripsheet">Trip sheet</button>
+          <button class="tab-btn" data-itab="proforma">Proforma</button>
+          <button class="tab-btn" data-itab="trading">Trading</button>
+          <button class="tab-btn" data-itab="monthly">Monthly / recurring</button>
+          <button class="tab-btn" data-itab="agent">Agent plain</button>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="panel"><div class="panel-body">
+              <div class="form-grid">
+                <div class="field"><label>Bill to</label><input value="Anoop Krishnan"></div>
+                <div class="field"><label>Company letterhead</label>
+                  <select><option>Starciti Travels</option><option>Starciti Holidays (alt. GST)</option><option>No letterhead — agent request</option></select>
+                </div>
+                <div class="field"><label>Invoice date</label><input value="14 Sep 2026"></div>
+                <div class="field"><label>Due date</label><input value="21 Sep 2026"></div>
+              </div>
+              <div class="switch-row" style="margin-top:13px"><span>Charge GST on this invoice</span><div class="switch on"></div></div>
+
+              <div class="field full" style="margin-top:16px">
+                <label>Line items</label>
+                <div class="line-table">
+                  <table>
+                    <thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th style="text-align:right">Amount</th></tr></thead>
+                    <tbody>
+                      <tr><td>Innova, Trivandrum → Munnar (3 days)</td><td>1</td><td class="mono-num">₹13,500</td><td class="mono-num" style="text-align:right">₹13,500</td></tr>
+                      <tr><td>Resort stay, MAP, 2 nights</td><td>1</td><td class="mono-num">₹8,500</td><td class="mono-num" style="text-align:right">₹8,500</td></tr>
+                      <tr><td>Driver allowance &amp; toll</td><td>1</td><td class="mono-num">₹2,000</td><td class="mono-num" style="text-align:right">₹2,000</td></tr>
+                    </tbody>
+                  </table>
+                  <button class="add-line-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add line item</button>
+                </div>
+              </div>
+
+              <div class="field full" style="margin-top:13px"><label>Promotional message on invoice footer</label><textarea>Ask about our Wayanad monsoon weekend package.</textarea></div>
+            </div></div>
+          </div>
+
+          <div class="doc-preview">
+            <div class="doc-letterhead">
+              <div><div class="doc-brand">Starciti Travels</div><div class="doc-brand-sub">Trivandrum, Kerala · GSTIN 32ABCXX1234Z1</div></div>
+              <div class="doc-meta">INV-2026-0341<br>14 Sep 2026<br>Regular taxi invoice</div>
+            </div>
+            <div class="doc-to"><b>Anoop Krishnan</b>Trivandrum, Kerala</div>
+            <table class="doc-table">
+              <thead><tr><th>Item</th><th style="text-align:right">Amount</th></tr></thead>
+              <tbody>
+                <tr><td>Vehicle — 3 days</td><td class="mono-num" style="text-align:right">₹13,500</td></tr>
+                <tr><td>Stay — 2 nights, MAP</td><td class="mono-num" style="text-align:right">₹8,500</td></tr>
+                <tr><td>Allowance &amp; toll</td><td class="mono-num" style="text-align:right">₹2,000</td></tr>
+              </tbody>
+            </table>
+            <div class="price-summary">
+              <div class="price-row"><span>Subtotal</span><span class="mono-num">₹24,000</span></div>
+              <div class="price-row"><span>CGST + SGST (5%)</span><span class="mono-num">₹1,200</span></div>
+              <div class="price-row total"><span>Total</span><span class="mono-num">₹25,200</span></div>
+            </div>
+            <div class="doc-promo">✦ Ask about our Wayanad monsoon weekend package.</div>
+            <div class="doc-actions">
+              <button class="btn btn-ghost">Download PDF</button>
+              <button class="btn btn-primary">Send to guest</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:20px">
+          <div class="panel-head"><h3>Recent invoices</h3></div>
+          <table>
+            <thead><tr><th>Invoice</th><th>Guest / company</th><th>Type</th><th>GST</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="cell-primary">INV-2026-0341</td><td>Anoop &amp; family</td><td>Regular taxi</td><td>With GST</td><td class="mono-num">₹25,200</td><td><span class="pill pill-brand">Paid</span></td></tr>
+              <tr><td class="cell-primary">INV-2026-0342</td><td>Kerala Escapes (agent)</td><td>Agent plain</td><td>Without GST</td><td class="mono-num">₹31,500</td><td><span class="pill pill-grey">Sent</span></td></tr>
+              <tr><td class="cell-primary">INV-2026-0338</td><td>Greenfield Corp</td><td>Monthly / recurring</td><td>With GST</td><td class="mono-num">₹28,400</td><td><span class="pill pill-red">Overdue · 14 days</span></td></tr>
+              <tr><td class="cell-primary">PF-2026-0119</td><td>Meridian Resorts</td><td>Proforma</td><td>With GST</td><td class="mono-num">₹1,10,000</td><td><span class="pill pill-grey">Awaiting approval</span></td></tr>
+              <tr><td class="cell-primary">TRD-2026-0022</td><td>Coastal Supplies</td><td>Trading</td><td>With GST</td><td class="mono-num">₹6,200</td><td><span class="pill pill-brand">Paid</span></td></tr>
+              <tr><td class="cell-primary">TS-2026-0071</td><td>St. Xavier's School</td><td>Trip sheet</td><td>Without GST</td><td class="mono-num">₹19,800</td><td><span class="pill pill-grey">Sent</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ ACCOUNTS ============ -->
+      <div class="view" id="view-accounts">
+        <div class="page-head"><div><h1>Accounts</h1><p>Every rupee in and out, and the balance in every account.</p></div></div>
+        <div class="kpi-row">
+          <div class="kpi-card"><div class="kpi-label">Cash in hand</div><div class="kpi-value">₹18,240</div><div class="kpi-delta muted">Petty cash</div></div>
+          <div class="kpi-card"><div class="kpi-label">Bank balance</div><div class="kpi-value">₹4.9L</div><div class="kpi-delta muted">SBI current a/c</div></div>
+          <div class="kpi-card"><div class="kpi-label">Payables due</div><div class="kpi-value">₹86,300</div><div class="kpi-delta warn">3 vendors</div></div>
+          <div class="kpi-card"><div class="kpi-label">EMI outstanding</div><div class="kpi-value">₹2.1L</div><div class="kpi-delta muted">Across 2 vehicles</div></div>
+        </div>
+        <div class="two-col">
+          <div class="panel"><div class="panel-head"><h3>Payables</h3></div>
+            <table><tbody>
+              <tr><td><div class="cell-primary">Backwater Fleet Co.</div><div class="cell-sub">Vehicle rent, Aug</div></td><td class="mono-num" style="text-align:right">₹31,200</td><td style="text-align:right"><span class="pill pill-amber">Partly paid</span></td></tr>
+              <tr><td><div class="cell-primary">HDFC Bank — vehicle loan</div><div class="cell-sub">KL-01-BR-2290 EMI</div></td><td class="mono-num" style="text-align:right">₹18,500</td><td style="text-align:right"><span class="pill pill-grey">Due in 3 days</span></td></tr>
+              <tr><td><div class="cell-primary">Green Valley Resorts</div><div class="cell-sub">Room block, Sep</div></td><td class="mono-num" style="text-align:right">₹36,600</td><td style="text-align:right"><span class="pill pill-red">Unpaid</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="panel"><div class="panel-head"><h3>Investor snapshot</h3></div>
+            <table><tbody>
+              <tr><td><div class="cell-primary">Vinod Nair</div><div class="cell-sub">KL-07-AZ-1190 · 40% share</div></td><td class="mono-num" style="text-align:right">₹22,100</td></tr>
+              <tr><td><div class="cell-primary">Anita Thomas</div><div class="cell-sub">Business equity · 15%</div></td><td class="mono-num" style="text-align:right">₹41,800</td></tr>
+            </tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ REPORTS ============ -->
+      <div class="view" id="view-reports">
+        <div class="page-head"><div><h1>Reports</h1><p>How the business is doing, at a glance.</p></div></div>
+        <div class="panel">
+          <div class="panel-head"><h3>Revenue, last 6 months</h3></div>
+          <div class="bar-chart">
+            <div class="bar-col"><div class="bar-val">₹5.1L</div><div class="bar" style="height:88px"></div><div class="bar-label">Apr</div></div>
+            <div class="bar-col"><div class="bar-val">₹4.6L</div><div class="bar" style="height:78px"></div><div class="bar-label">May</div></div>
+            <div class="bar-col"><div class="bar-val">₹5.9L</div><div class="bar" style="height:102px"></div><div class="bar-label">Jun</div></div>
+            <div class="bar-col"><div class="bar-val">₹6.2L</div><div class="bar" style="height:108px"></div><div class="bar-label">Jul</div></div>
+            <div class="bar-col"><div class="bar-val">₹6.1L</div><div class="bar" style="height:105px"></div><div class="bar-label">Aug</div></div>
+            <div class="bar-col"><div class="bar-val">₹6.8L</div><div class="bar" style="height:130px;background:var(--brand-dark)"></div><div class="bar-label">Sep</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Vehicle-wise profit, this month</h3></div>
+          <table>
+            <thead><tr><th>Vehicle</th><th>Trips</th><th>Revenue</th><th>Running cost</th><th>Net profit</th></tr></thead>
+            <tbody>
+              <tr><td>KL-01-BM-4521</td><td>14</td><td class="mono-num">₹1,68,000</td><td class="mono-num">₹52,300</td><td class="mono-num" style="color:var(--brand-dark);font-weight:600">₹1,15,700</td></tr>
+              <tr><td>KL-05-CJ-7788</td><td>11</td><td class="mono-num">₹1,21,500</td><td class="mono-num">₹44,900</td><td class="mono-num" style="color:var(--brand-dark);font-weight:600">₹76,600</td></tr>
+              <tr><td>KL-07-AZ-1190 (hired)</td><td>9</td><td class="mono-num">₹98,000</td><td class="mono-num">₹61,200</td><td class="mono-num" style="color:var(--brand-dark);font-weight:600">₹36,800</td></tr>
+              <tr><td>KL-01-BR-2290</td><td>16</td><td class="mono-num">₹1,42,000</td><td class="mono-num">₹58,700</td><td class="mono-num" style="color:var(--brand-dark);font-weight:600">₹83,300</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ DRIVER MOBILE VIEW ================================================================ -->
+<div id="driver-shell">
+  <div class="phone">
+    <div class="phone-status"><span>9:41</span><span>●●●● Wi-Fi</span></div>
+    <div class="phone-head">
+      <div><div class="phone-head-title">Hi, Suresh</div><div class="phone-head-sub">KL-01-BM-4521 · Innova</div></div>
+      <button class="back-to-admin" id="back-to-admin-btn">Admin view</button>
+    </div>
+    <div class="phone-body">
+
+      <div class="p-card">
+        <h4>Today's trip</h4>
+        <div class="p-trip-route">Trivandrum → Munnar</div>
+        <div class="p-trip-guest">Anoop &amp; family · 4 pax</div>
+        <div class="p-row"><span>Pickup</span><span>12 Sep, 7:00 AM</span></div>
+        <div class="p-row"><span>Trip</span><span>#4482</span></div>
+        <button class="p-btn">Start trip</button>
+      </div>
+
+      <div class="p-card">
+        <h4>Attendance</h4>
+        <div class="p-row"><span>Status</span><span style="color:var(--brand);font-weight:700">Checked in, 6:48 AM</span></div>
+        <button class="p-btn ghost">Check out</button>
+      </div>
+
+      <div class="p-card">
+        <h4>Log trip expense</h4>
+        <div class="p-field"><label>Start odometer (km)</label><input value="142880"></div>
+        <div class="p-field"><label>End odometer (km)</label><input placeholder="Enter at drop"></div>
+        <div class="p-field"><label>Fuel — litres / amount / station</label><input placeholder="e.g. 32L · ₹3,340 · HP Munnar Rd"></div>
+        <div class="p-field">
+          <label>Receipt photo</label>
+          <div class="p-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="12" cy="12.5" r="3.2"/><path d="M8 5l1.5-2h5L16 5"/></svg><div>Tap to capture receipt</div></div>
+        </div>
+        <div class="p-field"><label>Toll / parking</label><input placeholder="₹0"></div>
+        <div class="p-field"><label>Note (optional)</label><textarea rows="2" placeholder="Anything the reviewer should know"></textarea></div>
+        <button class="p-btn">Submit expense</button>
+        <div class="p-flag">Your last entry on this vehicle was flagged for low fuel efficiency — add a note if there's a reason (traffic, AC, hill roads).</div>
+      </div>
+
+      <div class="p-card">
+        <h4>My earnings — September</h4>
+        <div class="p-row"><span>Trips completed</span><span>14</span></div>
+        <div class="p-row"><span>Trip incentives</span><span class="mono-num">₹3,400</span></div>
+        <div class="p-row"><span>Referral bonus</span><span class="mono-num">₹800</span></div>
+        <div class="p-row" style="font-weight:700;color:var(--ink)"><span>Estimated payout</span><span class="mono-num">₹26,200</span></div>
+      </div>
+
+    </div>
+    <div class="p-tabbar">
+      <button class="p-tab active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>Home</button>
+      <button class="p-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Trips</button>
+      <button class="p-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Earnings</button>
+      <button class="p-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ ADD DRIVER MODAL ================================================================ -->
+<div class="modal-overlay" id="driver-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Add driver</h3>
+      <button class="modal-close" onclick="closeDriverModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="driver-type-toggle">
+        <button class="driver-type-btn active" id="dt-permanent" onclick="setDriverType('permanent')">
+          <b>Permanent</b><span>On payroll, full document set</span>
+        </button>
+        <button class="driver-type-btn" id="dt-temporary" onclick="setDriverType('temporary')">
+          <b>Temporary</b><span>Covering a trip or a short window</span>
+        </button>
+        <button class="driver-type-btn" id="dt-vendor" onclick="setDriverType('vendor')">
+          <b>Vendor-supplied</b><span>Comes with a hired vehicle</span>
+        </button>
+      </div>
+
+      <div class="field full vendor-only" id="vendor-field" style="margin-bottom:13px">
+        <label>Vendor</label>
+        <select><option>Backwater Fleet Co.</option><option>Wayanad Wheels</option><option>+ New vendor</option></select>
+      </div>
+
+      <div class="form-grid">
+        <div class="field"><label>Full name</label><input value=""></div>
+        <div class="field"><label>Phone</label><input placeholder="+91 9XXXX XXXXX"></div>
+        <div class="field"><label>Alternate contact 1</label><input placeholder="+91 9XXXX XXXXX"></div>
+        <div class="field"><label>Alternate contact 2</label><input placeholder="+91 9XXXX XXXXX"></div>
+        <div class="field"><label>Languages known</label><input placeholder="Malayalam, English"></div>
+        <div class="field"><label>Assign vehicle</label>
+          <select><option>Unassigned / pool</option><option>KL-09-DK-3305</option><option>KL-01-BM-4521</option><option>KL-05-CJ-7788</option></select>
+        </div>
+      </div>
+
+      <div class="field full temp-only" id="validity-field" style="margin-top:13px">
+        <label>Valid until</label>
+        <input placeholder="e.g. 5 Sep, or a single trip number">
+      </div>
+
+      <div class="field full" style="margin-top:16px" id="documents-field">
+        <label>Documents</label>
+        <div class="doc-row"><div><div class="doc-row-label">ID proof</div><div class="doc-row-sub">Required</div></div><button class="btn btn-ghost btn-sm">Upload</button></div>
+        <div class="doc-row"><div><div class="doc-row-label">Driving licence</div><div class="doc-row-sub">Required</div></div><button class="btn btn-ghost btn-sm">Upload</button></div>
+        <div class="doc-row" id="pcc-row"><div><div class="doc-row-label">Police clearance</div><div class="doc-row-sub" id="pcc-sub">Required before activation</div></div><button class="btn btn-ghost btn-sm">Upload</button></div>
+      </div>
+
+      <div class="field full temp-only" id="temp-note-field" style="margin-top:6px">
+        <div class="flag-note">Temporary drivers can be marked <b>Pending verification</b> and assigned to trips with police clearance still under review — those trips will show up in the Driver Expenses review queue automatically until it clears.</div>
+      </div>
+
+      <div class="field full vendor-only" id="vendor-note-field" style="margin-top:6px">
+        <div class="flag-note">Document verification is the vendor's responsibility under contract — this record just lets the driver be tracked, assigned, and flagged like any other driver.</div>
+      </div>
+
+      <div class="field full" id="salary-field" style="margin-top:13px"><label>Salary structure</label><select><option>Standard driver scale + trip incentives</option><option>Custom</option></select></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeDriverModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="closeDriverModal()">Save driver</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ NEW FLAG MODAL ================================================================ -->
+<div class="modal-overlay" id="flag-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>New flag</h3>
+      <button class="modal-close" onclick="closeFlagModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label>Entity type</label>
+          <select><option>Driver</option><option>Vehicle</option><option>Hotel / stay partner</option><option>Vendor / agent</option></select>
+        </div>
+        <div class="field"><label>Entity</label>
+          <select><option>Search or pick a driver, vehicle, hotel or vendor…</option><option>Anil Kumar (driver)</option><option>Arun Dev (driver)</option><option>KL-11-EF-9081 (vehicle)</option><option>Green Valley Resorts (hotel)</option><option>Kerala Escapes (vendor)</option></select>
+        </div>
+      </div>
+
+      <div class="field full" style="margin-top:13px">
+        <label>Severity</label>
+        <div class="severity-toggle">
+          <button class="severity-btn" data-sev="note" onclick="setSeverity('note')"><b>Note</b><span>Informational only</span></button>
+          <button class="severity-btn active" data-sev="caution" onclick="setSeverity('caution')"><b>Caution</b><span>Proceed carefully</span></button>
+          <button class="severity-btn" data-sev="avoid" onclick="setSeverity('avoid')"><b>Avoid</b><span>Needs admin sign-off</span></button>
+        </div>
+      </div>
+
+      <div class="field full" style="margin-top:6px">
+        <label>Note</label>
+        <textarea rows="3" placeholder="What happened, and what should the next person assigning this entity know?"></textarea>
+      </div>
+
+      <div class="qa-note" style="margin-top:14px;margin-bottom:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16v-4M12 8h.01"/><circle cx="12" cy="12" r="9"/></svg>
+        Internal only — this never shows on quotes, invoices, or the driver app. It resurfaces when this entity is picked again in Trip Planning or the Quote Builder.
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeFlagModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="closeFlagModal()">Save flag</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const titles = {
+    dashboard: ["Dashboard", "Tuesday, 1 September"],
+    enquiries: ["Enquiries", "5 open, 2 confirmed this week"],
+    quotebuilder: ["Quote builder", "Draft — not yet sent"],
+    bookings: ["Bookings", "5 confirmed trips"],
+    tripplanning: ["Trip planning", "1 trip needs a vehicle assigned"],
+    fleet: ["Vehicles & drivers", "6 vehicles · 4 owned, 2 hired"],
+    staff: ["Staff & attendance", "9 of 11 present today"],
+    expenses: ["Driver expenses", "3 entries need review"],
+    flags: ["Notes & flags", "5 entities flagged, internal only"],
+    invoices: ["Invoices", "₹1.42L pending across 9 invoices"],
+    accounts: ["Accounts", "Cash position as of today"],
+    reports: ["Reports", "September, month to date"],
+  };
+
+  function showView(name){
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navBtn = document.querySelector('.nav-item[data-view="' + name + '"]');
+    if(navBtn) navBtn.classList.add('active');
+    document.getElementById('topbar-title').textContent = titles[name][0];
+    document.getElementById('topbar-sub').textContent = titles[name][1];
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll('.nav-item[data-view]').forEach(btn=>{
+    btn.addEventListener('click', ()=> showView(btn.dataset.view));
+  });
+
+  // Quote builder customer-type tabs
+  document.querySelectorAll('#quote-customer-tabs .subtab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#quote-customer-tabs .subtab-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const t = btn.dataset.qtab;
+      document.getElementById('qb-agent-field').style.display = (t === 'agent') ? 'flex' : 'none';
+      document.getElementById('qb-name-label').textContent = (t === 'corporate') ? 'Company name' : (t === 'hotel') ? 'Hotel name' : 'Guest name';
+    });
+  });
+
+  // Invoice type tabs (visual only)
+  document.querySelectorAll('#invoice-type-tabs .tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#invoice-type-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // GST switch toggle
+  document.querySelectorAll('.switch').forEach(sw=>{
+    sw.addEventListener('click', ()=> sw.classList.toggle('on'));
+  });
+
+  // Role toggle -> driver mobile shell
+  document.getElementById('driver-role-btn').addEventListener('click', ()=> document.body.classList.add('driver-mode'));
+  document.getElementById('back-to-admin-btn').addEventListener('click', ()=> document.body.classList.remove('driver-mode'));
+
+  // Add driver modal
+  function openDriverModal(){ document.getElementById('driver-modal').classList.add('open'); }
+  function closeDriverModal(){ document.getElementById('driver-modal').classList.remove('open'); }
+  function setDriverType(type){
+    document.getElementById('dt-permanent').classList.toggle('active', type === 'permanent');
+    document.getElementById('dt-temporary').classList.toggle('active', type === 'temporary');
+    document.getElementById('dt-vendor').classList.toggle('active', type === 'vendor');
+    document.querySelectorAll('.temp-only').forEach(el => el.classList.toggle('show', type === 'temporary'));
+    document.querySelectorAll('.vendor-only').forEach(el => el.classList.toggle('show', type === 'vendor'));
+    document.getElementById('pcc-sub').textContent =
+      (type === 'temporary') ? 'Can start as "Pending — under review"' :
+      (type === 'vendor') ? 'Verified by the vendor, not required here' :
+      'Required before activation';
+    document.getElementById('salary-field').style.display = (type === 'permanent') ? 'block' : 'none';
+    document.getElementById('documents-field').style.display = (type === 'vendor') ? 'none' : 'block';
+  }
+  document.getElementById('driver-modal').addEventListener('click', (e)=>{
+    if(e.target.id === 'driver-modal') closeDriverModal();
+  });
+
+  // Add flag modal
+  function openFlagModal(){ document.getElementById('flag-modal').classList.add('open'); }
+  function closeFlagModal(){ document.getElementById('flag-modal').classList.remove('open'); }
+  function setSeverity(level){
+    document.querySelectorAll('.severity-btn').forEach(b => b.classList.toggle('active', b.dataset.sev === level));
+  }
+  document.getElementById('flag-modal').addEventListener('click', (e)=>{
+    if(e.target.id === 'flag-modal') closeFlagModal();
+  });
+</script>
+
+</body>
+</html>
