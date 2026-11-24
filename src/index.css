@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #EFF2F1;
+  --card: #FFFFFF;
+  --ink: #14181B;
+  --ink-soft: #3B4643;
+  --ink-faint: #4E5A56;
+  --line: #DEE4E2;
+  --line-soft: #EAEEEC;
+  --brand: #0B6E63;
+  --brand-dark: #084F47;
+  --brand-tint: #E2EFEC;
+  --amber: #B9762A;
+  --amber-tint: #F7EADA;
+  --amber-ink: #7A4E17;
+  --red: #B3261E;
+  --red-tint: #F7E1DF;
+  --sidebar-bg: #0F1E1B;
+  --sidebar-ink: #B7C6C1;
+  --sidebar-active: #17332C;
+  --sidebar-white: #F3F6F5;
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--line-soft);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink-faint);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-soft);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+  }
+}

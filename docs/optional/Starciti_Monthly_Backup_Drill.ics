@@ -1,0 +1,22 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Starciti Fleet Desk//Monthly Backup Drill//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:starciti-backup-drill-recur-001@starciti.in
+DTSTAMP:20261123T120000Z
+DTSTART:20261201T043000Z
+DTEND:20261201T050000Z
+RRULE:FREQ=MONTHLY;BYMONTHDAY=1
+SUMMARY:Starciti ERP: Monthly Backup & Restore Drill
+DESCRIPTION:Mandatory 10-minute disaster recovery drill for Mr. M. Ratnaraj:\n1. Open PowerShell\n2. cd E:\\projects\\starcity\n3. node scripts/restore_production.cjs\n4. Confirm 100% row count parity is printed.\nReference: docs/monthly_restore_drill.md
+LOCATION:Office / Server PC
+STATUS:CONFIRMED
+BEGIN:VALARM
+TRIGGER:-PT15M
+ACTION:DISPLAY
+DESCRIPTION:Reminder: Starciti ERP Monthly Backup & Restore Drill
+END:VALARM
+END:VEVENT
+END:VCALENDAR

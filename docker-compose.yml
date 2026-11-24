@@ -1,0 +1,271 @@
+# ==============================================================================
+# STARCITI FLEET DESK - SELF-HOSTED DOCKER STACK (WINDOWS HOST)
+#
+# Production self-hosted Supabase suite + Nginx Frontend + Cloudflare Tunnel
+# All ports strictly bound to 127.0.0.1 (No direct external port exposure)
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. POSTGRES DATABASE (Supabase Engine with pgjwt, pgcrypto, RLS)
+  # ----------------------------------------------------------------------------
+  db:
+    image: public.ecr.aws/supabase/postgres:17.12.0.000
+    container_name: starciti_production_db
+    restart: unless-stopped
+    ports:
+      # Bound strictly to localhost; never exposed to 0.0.0.0 or LAN
+      - "127.0.0.1:${POSTGRES_PORT:-54322}:5432"
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      JWT_SECRET: ${JWT_SECRET}
+    volumes:
+      - starciti_production_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h 127.0.0.1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ----------------------------------------------------------------------------
+  # 2. SUPABASE AUTH (GoTrue Authentication Microservice)
+  # ----------------------------------------------------------------------------
+  auth:
+    image: public.ecr.aws/supabase/gotrue:v2.198.0
+    container_name: starciti_production_auth
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: ${API_EXTERNAL_URL:-http://127.0.0.1:54321}
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+      GOTRUE_SITE_URL: ${SITE_URL:-http://localhost:8080}
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_JWT_EXP: ${JWT_EXPIRY:-3600}
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_DISABLE_SIGNUP: "${GOTRUE_DISABLE_SIGNUP:-true}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ----------------------------------------------------------------------------
+  # 3. POSTGREST (REST Data API over PostgreSQL)
+  # ----------------------------------------------------------------------------
+  rest:
+    image: public.ecr.aws/supabase/postgrest:v16.5
+    container_name: starciti_production_rest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGRST_DB_URI: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+      PGRST_DB_SCHEMAS: public,storage
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ----------------------------------------------------------------------------
+  # 4. SUPABASE STORAGE (Receipts, Odometer Photos, Invoices)
+  # ----------------------------------------------------------------------------
+  storage:
+    image: public.ecr.aws/supabase/storage-api:v1.96.0
+    container_name: starciti_production_storage
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      rest:
+        condition: service_started
+    environment:
+      ANON_KEY: ${ANON_KEY}
+      SERVICE_KEY: ${SERVICE_ROLE_KEY}
+      POSTGREST_URL: http://rest:3000
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+      FILE_SIZE_LIMIT: 52428800
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+      TENANT_ID: stub
+      REGION: stub
+      GLOBAL_S3_BUCKET: stub
+    volumes:
+      - starciti_production_storage_data:/var/lib/storage
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ----------------------------------------------------------------------------
+  # 5. REALTIME (Websockets for Live Ledger & Dispatch)
+  # ----------------------------------------------------------------------------
+  realtime:
+    image: public.ecr.aws/supabase/realtime:v2.167.0
+    container_name: starciti_production_realtime
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 4000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: postgres
+      DB_AFTER_CONNECT_QUERY: 'SET search_path TO _realtime'
+      DB_ENC_KEY: ${REALTIME_ENC_KEY}
+      API_JWT_SECRET: ${JWT_SECRET}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ----------------------------------------------------------------------------
+  # 6. POSTGRES META (Schema & Table Management for Studio)
+  # ----------------------------------------------------------------------------
+  meta:
+    image: public.ecr.aws/supabase/postgres-meta:v0.100.0
+    container_name: starciti_production_meta
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PG_META_PORT: 8080
+      PG_META_DB_HOST: db
+      PG_META_DB_PORT: 5432
+      PG_META_DB_USER: postgres
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      PG_META_DB_NAME: postgres
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ----------------------------------------------------------------------------
+  # 7. KONG API GATEWAY (Routes /auth, /rest, /storage, /realtime)
+  # ----------------------------------------------------------------------------
+  kong:
+    image: ghcr.io/supabase/kong:2.8.1
+    container_name: starciti_production_kong
+    restart: unless-stopped
+    ports:
+      # Bound strictly to localhost; accessed locally or via Nginx/Cloudflare Tunnel
+      - "127.0.0.1:${KONG_HTTP_PORT:-54321}:8000"
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_PLUGINS: request-transformer,cors
+      KONG_NGINX_PROXY_PROXY_BUFFERS: "64 160k"
+      KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: "160k"
+    volumes:
+      - ./docker/volumes/api/kong.yml:/var/lib/kong/kong.yml:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ----------------------------------------------------------------------------
+  # 8. SUPABASE STUDIO (Database Management Dashboard)
+  # ----------------------------------------------------------------------------
+  studio:
+    image: public.ecr.aws/supabase/studio:2026.11.16-sha-51bd16d
+    container_name: starciti_production_studio
+    restart: unless-stopped
+    ports:
+      # Bound strictly to localhost; never exposed externally
+      - "127.0.0.1:${STUDIO_PORT:-54323}:3000"
+    environment:
+      STUDIO_PG_META_URL: http://meta:8080
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DEFAULT_ORGANIZATION_NAME: "Starciti Group"
+      DEFAULT_PROJECT_NAME: "Starciti Fleet Desk"
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_PUBLIC_URL: http://127.0.0.1:54321
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
+      AUTH_JWT_SECRET: ${JWT_SECRET}
+      # Studio Basic Auth Protection
+      STUDIO_USERNAME: ${STUDIO_USERNAME:-admin}
+      STUDIO_PASSWORD: ${STUDIO_PASSWORD}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ----------------------------------------------------------------------------
+  # 9. FRONTEND PRODUCTION CONTAINER (Nginx SPA Server + Reverse Proxy)
+  # ----------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    container_name: starciti_production_frontend
+    restart: unless-stopped
+    ports:
+      # Bound strictly to localhost; exposed outward via Cloudflare Tunnel
+      - "127.0.0.1:${FRONTEND_PORT:-8080}:80"
+    depends_on:
+      - kong
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ----------------------------------------------------------------------------
+  # 10. CLOUDFLARE TUNNEL (Zero Trust Outbound Tunnel - No Open Ports)
+  # ----------------------------------------------------------------------------
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: starciti_production_tunnel
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - frontend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+volumes:
+  starciti_production_db_data:
+    name: starciti_production_db_data
+  starciti_production_storage_data:
+    name: starciti_production_storage_data
