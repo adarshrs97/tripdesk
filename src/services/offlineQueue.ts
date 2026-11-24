@@ -19,12 +19,16 @@ let memoryQueue: QueuedTrip[] = [];
 
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    if (typeof window === 'undefined' || !window.indexedDB) {
+    const idb = typeof indexedDB !== 'undefined'
+      ? indexedDB
+      : (typeof window !== 'undefined' ? window.indexedDB : undefined);
+
+    if (!idb) {
       reject(new Error('IndexedDB is not available in this environment'));
       return;
     }
 
-    const request = window.indexedDB.open(DB_NAME, DB_VERSION);
+    const request = idb.open(DB_NAME, DB_VERSION);
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;

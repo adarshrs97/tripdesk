@@ -6,10 +6,9 @@ dist/
 
 # Local Environment & Secrets (NEVER COMMIT)
 .env
-.env.local
-.env.*.local
-.env.docker
-.env.production
+.env.*
+!.env.example
+!.env.production.example
 docker/.env
 *.pem
 *.key

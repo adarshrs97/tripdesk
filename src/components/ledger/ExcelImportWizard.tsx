@@ -89,13 +89,13 @@ export const ExcelImportWizard: React.FC<ExcelImportWizardProps> = ({
   }, []);
 
   // Update contract when customer changes
-  const handleCustomerChange = (newCustId: string) => {
+  const handleCustomerChange = async (newCustId: string) => {
     setSelectedCustomerId(newCustId);
     const linked = contracts.find((c) => c.customerId === newCustId);
     if (linked) setSelectedContractId(linked.id);
 
-    // Load saved profile if available
-    const saved = getCustomerImportProfile(newCustId);
+    // Load saved profile from database if available
+    const saved = await getCustomerImportProfile(newCustId);
     if (saved && sheetHeaders.length > 0) {
       setColumnMapping(saved.mapping);
     }
@@ -133,7 +133,7 @@ export const ExcelImportWizard: React.FC<ExcelImportWizardProps> = ({
     reader.readAsArrayBuffer(file);
   };
 
-  const processSheetHeaders = (sheet: XLSX.WorkSheet, custId: string) => {
+  const processSheetHeaders = async (sheet: XLSX.WorkSheet, custId: string) => {
     const rawRows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null });
     if (!rawRows || rawRows.length === 0) return;
 
@@ -153,8 +153,8 @@ export const ExcelImportWizard: React.FC<ExcelImportWizardProps> = ({
     const headers = (rawRows[headerRowIdx] || []).map((h: any) => String(h || '').trim()).filter(Boolean);
     setSheetHeaders(headers);
 
-    // Check if customer has a saved profile
-    const savedProfile = custId ? getCustomerImportProfile(custId) : null;
+    // Check if customer has a saved profile in DB
+    const savedProfile = custId ? await getCustomerImportProfile(custId) : null;
     let mapping: ImportColumnMapping;
     if (savedProfile) {
       mapping = savedProfile.mapping;
@@ -188,16 +188,20 @@ export const ExcelImportWizard: React.FC<ExcelImportWizardProps> = ({
     }
   };
 
-  // Save current mapping as customer profile
-  const handleSaveProfile = () => {
+  // Save current mapping as customer profile into PostgreSQL DB
+  const handleSaveProfile = async () => {
     const customer = customers.find((c) => c.id === selectedCustomerId);
-    saveCustomerImportProfile(
-      selectedCustomerId,
-      customer?.name || 'Customer Profile',
-      columnMapping
-    );
-    setProfileSavedToast(true);
-    setTimeout(() => setProfileSavedToast(false), 2500);
+    try {
+      await saveCustomerImportProfile(
+        selectedCustomerId,
+        customer?.name || 'Customer Profile',
+        columnMapping
+      );
+      setProfileSavedToast(true);
+      setTimeout(() => setProfileSavedToast(false), 2500);
+    } catch (err) {
+      console.error('Failed to save profile to database:', err);
+    }
   };
 
   // Commit Parsed Entries to Starciti Ledger

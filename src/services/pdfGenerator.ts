@@ -157,6 +157,9 @@ export function generateInvoiceHtml(invoice: RenderedInvoice, annexureEntries?: 
 <head>
   <meta charset="utf-8">
   <title>${invoice.title || 'Invoice'} - ${invoice.metaFields?.find((m) => m.key === 'invoiceNo')?.value || ''}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     @page {
       size: A4 portrait;
@@ -165,7 +168,7 @@ export function generateInvoiceHtml(invoice: RenderedInvoice, annexureEntries?: 
     body {
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: "Noto Sans Malayalam", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       color: #0f172a;
       background: #ffffff;
       -webkit-print-color-adjust: exact;

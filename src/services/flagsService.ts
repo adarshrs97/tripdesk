@@ -101,8 +101,8 @@ export class FlagsService {
         }
 
         const { data, error } = await query;
-        if (!error && data) {
-          return data.map((d: any) => ({
+        if (!error && data && data.length > 0) {
+          const dbFlags = data.map((d: any) => ({
             id: d.id,
             entityType: d.entity_type,
             entityId: d.entity_id,
@@ -118,6 +118,11 @@ export class FlagsService {
             createdAt: d.created_at,
             updatedAt: d.updated_at,
           }));
+          const dbIds = new Set(dbFlags.map((f: any) => f.id));
+          const localUnsynced = this.mockFlags.filter(
+            (f) => !f.deletedAt && !dbIds.has(f.id)
+          );
+          return [...dbFlags, ...localUnsynced];
         }
       } catch (err) {
         console.warn('Falling back to local mock flags:', err);

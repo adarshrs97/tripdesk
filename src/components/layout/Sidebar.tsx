@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useSuppliers } from '../../context/SupplierContext';
 import { useModules } from '../../context/ModuleContext';
 import { TopNavParent } from '../../modules/manifest';
+import { APP_VERSION } from '../../config/version';
 import { QuickInvoiceModal } from '../billing/QuickInvoiceModal';
 import {
   LayoutDashboard,
@@ -78,6 +79,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex items-center gap-1.5">
               <span className="font-heading font-bold text-sidebar-white tracking-tight text-sm">
                 Starciti Desk
+              </span>
+              <span
+                data-testid="sidebar-version-badge"
+                className="text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded bg-sidebar-active text-emerald-400 border border-emerald-500/30"
+                title={`Starciti Fleet Desk v${APP_VERSION}`}
+              >
+                v{APP_VERSION}
               </span>
             </div>
             <p className="text-[11px] text-sidebar-ink/70 truncate">
@@ -238,6 +246,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <LogOut className="w-3.5 h-3.5" />
             </button>
           </div>
+        </div>
+        <div className="mt-1.5 px-2 flex items-center justify-between text-[10px] text-sidebar-ink/50 font-mono">
+          <span>Starciti Desk v{APP_VERSION}</span>
+          <span className="text-emerald-500/80">Self-Hosted</span>
         </div>
       </div>
 

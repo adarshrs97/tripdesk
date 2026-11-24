@@ -50,6 +50,7 @@ export const AddContractModal: React.FC<AddContractModalProps> = ({
   const [outstationBata, setOutstationBata] = useState(200);
   const [roundingMode, setRoundingMode] = useState<'down' | 'nearest' | 'none'>('down');
   const [taxProfile, setTaxProfile] = useState<'disabled' | 'cgst_sgst' | 'igst'>('disabled');
+  const [legacyDecimalHoursBug, setLegacyDecimalHoursBug] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -127,6 +128,7 @@ export const AddContractModal: React.FC<AddContractModalProps> = ({
         extraDayRate: 0,
         roundingMode,
         gstMode: taxProfile,
+        legacyDecimalHoursBug,
       });
 
       onContractAdded(createdContract, createdTerms);
@@ -468,6 +470,27 @@ export const AddContractModal: React.FC<AddContractModalProps> = ({
                   <option value="nearest">Nearest Integer</option>
                   <option value="none">Exact (None)</option>
                 </select>
+              </div>
+
+              <div className="sm:col-span-2 pt-2 border-t border-line/60">
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={legacyDecimalHoursBug}
+                    onChange={(e) => setLegacyDecimalHoursBug(e.target.checked)}
+                    className="mt-0.5 rounded text-brand focus:ring-brand border-line"
+                  />
+                  <div>
+                    <span className="text-xs font-semibold text-ink">
+                      Bill extra hours the old spreadsheet way (9h45m as 9.45)
+                    </span>
+                    <p className="text-[11px] text-ink-soft mt-0.5 leading-relaxed">
+                      {legacyDecimalHoursBug
+                        ? 'ON: 9h 45m billed as 9.45 × ₹150 = ₹1,417.50. VTL August total: ₹68,617 (Equals paper invoice).'
+                        : 'OFF: 9h 45m billed pro-rata as 9.75 × ₹150 = ₹1,462.50. VTL August total: ₹68,662 (Exact decimal calculation, +₹45).'}
+                    </p>
+                  </div>
+                </label>
               </div>
 
               <div>

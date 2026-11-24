@@ -273,41 +273,121 @@ export function parseWorksheetWithMapping(
   return { entries, issues, validationErrors, headers };
 }
 
-const inMemoryProfiles = new Map<string, string>();
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 
 /**
- * Reusable import profile storage helpers (keyed by customerId)
+ * Reusable import profile storage helpers
+ * Stored in PostgreSQL public.import_profiles table with Row Level Security (RLS)
+ * Zero localStorage fallback in production code paths.
  */
-export function saveCustomerImportProfile(customerId: string, customerName: string, mapping: ImportColumnMapping): void {
-  const profile: CustomerImportProfile = {
-    id: `profile-${customerId}`,
-    customerId,
-    customerName,
-    mapping,
-    updatedAt: new Date().toISOString(),
-  };
-  const serialized = JSON.stringify(profile);
-  if (typeof localStorage !== 'undefined') {
-    try {
-      localStorage.setItem(`starciti_import_profile_${customerId}`, serialized);
-      return;
-    } catch {
-      // Fallback to in-memory
-    }
+export async function saveCustomerImportProfile(
+  customerId: string,
+  customerName: string,
+  mapping: ImportColumnMapping,
+  client?: any
+): Promise<CustomerImportProfile> {
+  const profileName = `${customerName} Import Profile`;
+
+  // 1. Direct PG client (used by Vitest suites running against the isolated test DB)
+  if (client) {
+    const res = await client.query(
+      `INSERT INTO public.import_profiles (customer_id, customer_name, profile_name, mapping, updated_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       ON CONFLICT (customer_id)
+       DO UPDATE SET mapping = EXCLUDED.mapping, customer_name = EXCLUDED.customer_name, updated_at = NOW()
+       RETURNING id, customer_id, customer_name, mapping, updated_at`,
+      [customerId, customerName, profileName, JSON.stringify(mapping)]
+    );
+    const row = res.rows[0];
+    return {
+      id: row.id,
+      customerId: row.customer_id,
+      customerName: row.customer_name,
+      mapping: typeof row.mapping === 'string' ? JSON.parse(row.mapping) : row.mapping,
+      updatedAt: row.updated_at,
+    };
   }
-  inMemoryProfiles.set(`starciti_import_profile_${customerId}`, serialized);
+
+  // 2. Browser Supabase client with active JWT session & RLS enforcement
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase
+      .from('import_profiles')
+      .upsert(
+        {
+          customer_id: customerId,
+          customer_name: customerName,
+          profile_name: profileName,
+          mapping: mapping as any,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'customer_id' }
+      )
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Failed to save import profile to database:', error);
+      throw new Error(`Database error saving import profile: ${error.message}`);
+    }
+
+    return {
+      id: data.id,
+      customerId: data.customer_id,
+      customerName: data.customer_name,
+      mapping: data.mapping,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  throw new Error('Database is not configured to save import profiles.');
 }
 
-export function getCustomerImportProfile(customerId: string): CustomerImportProfile | null {
-  try {
-    if (typeof localStorage !== 'undefined') {
-      const raw = localStorage.getItem(`starciti_import_profile_${customerId}`);
-      if (raw) return JSON.parse(raw);
-    }
-  } catch {
-    // Ignore
+export async function getCustomerImportProfile(
+  customerId: string,
+  client?: any
+): Promise<CustomerImportProfile | null> {
+  // 1. Direct PG client (used by Vitest suites running against the isolated test DB)
+  if (client) {
+    const res = await client.query(
+      `SELECT id, customer_id, customer_name, mapping, updated_at
+       FROM public.import_profiles
+       WHERE customer_id = $1`,
+      [customerId]
+    );
+    if (res.rows.length === 0) return null;
+    const row = res.rows[0];
+    return {
+      id: row.id,
+      customerId: row.customer_id,
+      customerName: row.customer_name,
+      mapping: typeof row.mapping === 'string' ? JSON.parse(row.mapping) : row.mapping,
+      updatedAt: row.updated_at,
+    };
   }
-  const mem = inMemoryProfiles.get(`starciti_import_profile_${customerId}`);
-  if (mem) return JSON.parse(mem);
+
+  // 2. Browser Supabase client with active JWT session & RLS enforcement
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase
+      .from('import_profiles')
+      .select('*')
+      .eq('customer_id', customerId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Failed to get import profile from database:', error);
+      return null;
+    }
+
+    if (data) {
+      return {
+        id: data.id,
+        customerId: data.customer_id,
+        customerName: data.customer_name,
+        mapping: data.mapping,
+        updatedAt: data.updated_at,
+      };
+    }
+  }
+
   return null;
 }

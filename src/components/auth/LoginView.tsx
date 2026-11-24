@@ -4,9 +4,10 @@ import { Car, Lock, Mail, AlertCircle, Eye, EyeOff, ShieldCheck, ArrowRight } fr
 
 interface LoginViewProps {
   onLoginSuccess?: () => void;
+  onOpenSetupWizard?: () => void;
 }
 
-export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
+export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenSetupWizard }) => {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -136,12 +137,26 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
           </button>
         </form>
 
-        {/* Security Note */}
-        <div className="pt-4 border-t border-line/60 flex items-start gap-2.5 text-[11px] text-ink-soft leading-relaxed">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-          <span>
-            Protected with Supabase Auth &amp; Row Level Security (RLS). Public registration is disabled; users are invited in-app by administrators.
-          </span>
+        {/* Security Note & Setup Wizard Link */}
+        <div className="pt-4 border-t border-line/60 space-y-2.5">
+          <div className="flex items-start gap-2.5 text-[11px] text-ink-soft leading-relaxed">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <span>
+              Protected with Supabase Auth &amp; Row Level Security (RLS). Public registration is disabled; users are invited in-app by administrators.
+            </span>
+          </div>
+
+          {onOpenSetupWizard && (
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={onOpenSetupWizard}
+                className="text-[11px] font-semibold text-brand hover:underline cursor-pointer inline-flex items-center gap-1"
+              >
+                Need to run first-time setup or configure administrator credentials?
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

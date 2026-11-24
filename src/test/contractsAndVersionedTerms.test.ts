@@ -99,10 +99,43 @@ describe('Milestone 10 - Requirement 2: Contracts & Versioned Terms Data Pipelin
     );
 
     // Exact reproduction of ₹68,617 (9h45m decimal 9.45 * 150 = 1417.50)
+    // THIS EQUALS THE PAPER INVOICE (Invoice VTL August 2026- Monthly.pdf)
     expect(invoiceResult.subtotal).toBe(68617.50);
     expect(invoiceResult.totalAmount).toBe(68617);
     expect(invoiceResult.roundOff).toBe(-0.50);
     expect(invoiceResult.amountInWords).toBe('Sixty Eight Thousand Six Hundred and Seventeen Only');
+  });
+
+  it('calculates Rs 68,662 for VTL August when legacyDecimalHoursBug is OFF (exact pro-rata decimal hours: 9h45m = 9.75h, +Rs 45 difference)', async () => {
+    const calcParamsExact: MonthlyFixedContractParams = {
+      fixedAmount: 65000,
+      includedKm: 3000,
+      includedHoursPerDay: 12,
+      extraKmRate: 18,
+      extraHourRate: 150,
+      nightBataRate: 200,
+      outstationBataRate: 200,
+      contractWorkingDays: 30,
+      roundingMode: 'down',
+      legacyDecimalHoursBug: false, // Flag OFF
+    };
+
+    const invoiceResult = calculateMonthlyFixedInvoice(
+      '2026-08-01',
+      '2026-08-31',
+      EXACT_SEED_VTL_AUG_2026,
+      calcParamsExact
+    );
+
+    // Exact calculation: 9h 45m = 9.75 hours * 150 = 1462.50
+    // Total subtotal: 65,000 + 1,462.50 + 2,200 = 68,662.50 -> rounded down to 68,662
+    expect(invoiceResult.subtotal).toBe(68662.50);
+    expect(invoiceResult.totalAmount).toBe(68662);
+    expect(invoiceResult.roundOff).toBe(-0.50);
+    expect(invoiceResult.amountInWords).toBe('Sixty Eight Thousand Six Hundred and Sixty Two Only');
+
+    // Prove difference is exactly Rs 45
+    expect(invoiceResult.totalAmount - 68617).toBe(45);
   });
 
   it('creates School customer, contract, and rate terms from data, reproducing Rs 21,210', async () => {

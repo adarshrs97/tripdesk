@@ -190,7 +190,19 @@ const AppContent: React.FC = () => {
 
   // Real Supabase Auth Guard: Show LoginView if no active session
   if (!currentUser) {
-    return <LoginView onLoginSuccess={() => setCurrentView('dashboard')} />;
+    return (
+      <>
+        <LoginView
+          onLoginSuccess={() => setCurrentView('dashboard')}
+          onOpenSetupWizard={() => setIsSetupWizardOpen(true)}
+        />
+        <FirstRunSetupWizard
+          isOpen={isSetupWizardOpen}
+          onClose={() => setIsSetupWizardOpen(false)}
+          onComplete={() => setIsSetupWizardOpen(false)}
+        />
+      </>
+    );
   }
 
   return (

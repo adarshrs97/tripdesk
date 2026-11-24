@@ -10,6 +10,7 @@ import { ComplianceSettingsManager } from './ComplianceSettingsManager';
 import { TemplateGalleryManager } from './TemplateGalleryManager';
 import { FinancialAllocationSettings } from './FinancialAllocationSettings';
 import { TariffsPricingManager } from './TariffsPricingManager';
+import { GoLiveChecklist } from './GoLiveChecklist';
 import {
   SettingsService,
   VocabularyItem,
@@ -46,7 +47,8 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onOpenSetupWiz
     | 'compliance'
     | 'templates'
     | 'financial'
-  >('rules');
+    | 'golive'
+  >('golive');
   const { modules, toggleModule } = useModules();
 
   // Rules State
@@ -150,6 +152,17 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onOpenSetupWiz
 
           {/* Tab Buttons */}
           <div className="flex items-center gap-1.5 p-1 bg-paper border border-line rounded-lg shrink-0 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('golive')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 shrink-0 ${
+              activeTab === 'golive'
+                ? 'bg-amber-600 text-white shadow-xs'
+                : 'text-amber-800 hover:text-amber-900 bg-amber-50/80 border border-amber-200/80'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Go-live checklist
+          </button>
           <button
             onClick={() => setActiveTab('modules')}
             className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
@@ -257,6 +270,11 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onOpenSetupWiz
         </div>
         </div>
       </div>
+
+      {/* TAB: GO-LIVE CHECKLIST */}
+      {activeTab === 'golive' && (
+        <GoLiveChecklist onNavigateTab={(tab) => setActiveTab(tab)} />
+      )}
 
       {/* TAB 1: MODULE REGISTRY */}
       {activeTab === 'modules' && (

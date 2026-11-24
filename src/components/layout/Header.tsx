@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { ViewId } from '../../types';
 import { useSuppliers } from '../../context/SupplierContext';
 import { useAuth } from '../../context/AuthContext';
+import { APP_VERSION } from '../../config/version';
 import {
   Building2,
   Bell,
@@ -72,15 +73,24 @@ export const Header: React.FC<HeaderProps> = ({
     <header role="banner" aria-label="Application Header" className="h-16 bg-card border-b border-line px-6 flex items-center justify-between gap-4 sticky top-0 z-30 shadow-xs">
       {/* Title & Context */}
       <div>
-        <h1 className="text-lg font-heading font-bold text-ink flex items-center gap-2">
-          {viewInfo.title}
-          {isMonthClosePeriod && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-sans font-medium px-2 py-0.5 rounded-full bg-amber-tint text-amber-ink border border-amber/20">
-              <AlertTriangle className="w-3 h-3" />
-              Month-End Close Window
-            </span>
-          )}
-        </h1>
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-lg font-heading font-bold text-ink flex items-center gap-2">
+            {viewInfo.title}
+            {isMonthClosePeriod && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-sans font-medium px-2 py-0.5 rounded-full bg-amber-tint text-amber-ink border border-amber/20">
+                <AlertTriangle className="w-3 h-3" />
+                Month-End Close Window
+              </span>
+            )}
+          </h1>
+          <span
+            data-testid="header-version-badge"
+            className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-brand-tint/60 text-brand-dark border border-brand/20 shadow-2xs"
+            title={`Starciti Fleet Desk v${APP_VERSION} (Production Ready)`}
+          >
+            v{APP_VERSION}
+          </span>
+        </div>
         <p className="text-xs text-ink-soft hidden sm:block">
           {viewInfo.subtitle}
         </p>
